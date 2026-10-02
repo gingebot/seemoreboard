@@ -1,0 +1,23 @@
+{
+  "rules": [
+    "Follow the feature specification exactly unless the user explicitly overrides it.",
+    "Modify existing files when appropriate; create new files when needed.",
+    "After implementing changes, always run './gradlew assembleDebug'.",
+    "If the build fails, fix the errors and rebuild until successful.",
+    "After a successful build, run 'adb install -r app/build/outputs/apk/debug/app-debug.apk'.",
+    "After installation, run 'adb logcat' and monitor for crashes or incorrect behaviour.",
+    "When the user describes issues or incorrect behaviour, refine the implementation and repeat the loop.",
+    "All code must remain consistent with the project's architecture and conventions.",
+    "Never invent features; always follow the spec.",
+    "Ask for clarification only when the spec is ambiguous."
+  ],
+  "commands": {
+    "build": "./gradlew assembleDebug",
+    "deploy": "adb install -r app/build/outputs/apk/debug/app-debug.apk",
+    "debug": "adb logcat"
+  },
+  "project": {
+    "specDirectory": "specs",
+    "sourceDirectory": "app"
+  }
+}
