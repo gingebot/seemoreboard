@@ -103,7 +103,8 @@ app/
 │   ├── integration/
 │   │   └── InputConnectionBridge.kt
 │   └── config/
-│       └── ImeConfig.kt
+│       ├── ImeConfig.kt
+│       └── method.xml
 │
 ├── ui/
 │   ├── keyboard/
@@ -207,6 +208,7 @@ to the active text field.
   - `onCreateInputView()`
   - `onStartInputView()`
   - `onFinishInputView()`
+  - `onEvaluateInputViewShown()` (controls visibility per editor type)
 - Provide the active `InputConnection` to the keyboard logic.
 - Read `EditorInfo` to understand the input type:
   - numeric fields
