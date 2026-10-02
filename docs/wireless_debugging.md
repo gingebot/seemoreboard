@@ -68,7 +68,7 @@ adb pair 192.168.1.42:45629
 ```
 Enter the pairing code when prompted.
 
-## 3. Connect for Debugging
+## 4. Connect for Debugging
 ```bash
 adb connect <phone-ip>:<debug-port>
 ```
@@ -78,7 +78,7 @@ Example:
 adb connect 192.168.1.42:37099
 ```
 
-## 4. Verify Connection
+## 5. Verify Connection
 ```bash
 adb devices
 ```
