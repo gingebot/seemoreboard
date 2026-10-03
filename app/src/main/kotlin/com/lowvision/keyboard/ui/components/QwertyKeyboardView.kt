@@ -42,16 +42,74 @@ fun QwertyKeyboardView(
             val current = viewModel.state.value.zoomLevel
             viewModel.updateZoom(current * scaleFactor)
             val state = viewModel.state.value
+            innerContainer.pivotX = innerContainer.width / 2f
+            innerContainer.pivotY = innerContainer.height / 2f
             innerContainer.scaleX = state.zoomLevel
             innerContainer.scaleY = state.zoomLevel
-            clampPan(innerContainer, root, state)
+
+            // Re-clamp pan after zoom change.  With centered pivot,
+            // higher zoom pushes edges equally outward; bounds allow
+            // positive translation to see the left/top and negative
+            // to see the right/bottom.
+            val innerW = innerContainer.width * state.zoomLevel
+            val innerH = innerContainer.height * state.zoomLevel
+            val rw = root.width.toFloat()
+            val rh = root.height.toFloat()
+
+            if (innerW <= rw && innerH <= rh) {
+                if (state.offsetX != 0f || state.offsetY != 0f) {
+                    viewModel.updatePan(-state.offsetX, -state.offsetY)
+                }
+                innerContainer.translationX = 0f
+                innerContainer.translationY = 0f
+            } else {
+                val maxTx = rw * (state.zoomLevel - 1f) / 2f
+                val minTx = rw * (1f - state.zoomLevel) / 2f
+                val maxTy = rh * (state.zoomLevel - 1f) / 2f
+                val minTy = rh * (1f - state.zoomLevel) / 2f
+
+                val clampedX = state.offsetX.coerceIn(minTx, maxTx)
+                val clampedY = state.offsetY.coerceIn(minTy, maxTy)
+                if (clampedX != state.offsetX || clampedY != state.offsetY) {
+                    viewModel.updatePan(clampedX - state.offsetX, clampedY - state.offsetY)
+                }
+                innerContainer.translationX = clampedX
+                innerContainer.translationY = clampedY
+            }
         },
         onPanChanged = { dx, dy ->
-            viewModel.updatePan(dx, dy)
             val state = viewModel.state.value
-            innerContainer.translationX = state.offsetX
-            innerContainer.translationY = state.offsetY
-            clampPan(innerContainer, root, state)
+            val innerW = innerContainer.width * state.zoomLevel
+            val innerH = innerContainer.height * state.zoomLevel
+            val rw = root.width.toFloat()
+            val rh = root.height.toFloat()
+
+            if (innerW <= rw && innerH <= rh) {
+                // Content fits — reset any stale offsets
+                if (state.offsetX != 0f || state.offsetY != 0f) {
+                    viewModel.updatePan(-state.offsetX, -state.offsetY)
+                }
+                innerContainer.translationX = 0f
+                innerContainer.translationY = 0f
+            } else {
+                // Clamp the proposed new offset BEFORE applying, so
+                // ViewModel and view stay in sync.  Bounds account for
+                // centered pivot: positive translation sees left/top,
+                // negative sees right/bottom.
+                val maxTx = rw * (state.zoomLevel - 1f) / 2f
+                val minTx = rw * (1f - state.zoomLevel) / 2f
+                val maxTy = rh * (state.zoomLevel - 1f) / 2f
+                val minTy = rh * (1f - state.zoomLevel) / 2f
+
+                val newX = (state.offsetX + dx).coerceIn(minTx, maxTx)
+                val newY = (state.offsetY + dy).coerceIn(minTy, maxTy)
+
+                if (newX != state.offsetX || newY != state.offsetY) {
+                    viewModel.updatePan(newX - state.offsetX, newY - state.offsetY)
+                    innerContainer.translationX = newX
+                    innerContainer.translationY = newY
+                }
+            }
         }
     )
     handlers.createDetector(context)
@@ -99,34 +157,6 @@ private fun createKeyRow(
                 performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                 viewModel.onKeyPress(label)
             })
-        }
-    }
-}
-
-private fun clampPan(
-    inner: LinearLayout,
-    root: FrameLayout,
-    state: com.lowvision.keyboard.ui.keyboard.KeyboardState
-) {
-    val innerW = inner.width * state.zoomLevel
-    val innerH = inner.height * state.zoomLevel
-    val rootW = root.width
-    val rootH = root.height
-
-    if (rootW > 0 && innerW > rootW) {
-        val maxTx = (innerW - rootW) / 2f
-        val minTx = -(innerW - rootW) / 2f
-        val clampedX = state.offsetX.coerceIn(minTx, maxTx)
-        if (clampedX != state.offsetX) {
-            inner.translationX = clampedX
-        }
-    }
-    if (rootH > 0 && innerH > rootH) {
-        val maxTy = (innerH - rootH) / 2f
-        val minTy = -(innerH - rootH) / 2f
-        val clampedY = state.offsetY.coerceIn(minTy, maxTy)
-        if (clampedY != state.offsetY) {
-            inner.translationY = clampedY
         }
     }
 }
