@@ -4,7 +4,7 @@ import android.inputmethodservice.InputMethodService
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import com.lowvision.keyboard.ime.integration.InputConnectionBridge
-import com.lowvision.keyboard.ui.components.SingleKeyView
+import com.lowvision.keyboard.ui.components.QwertyKeyboardView
 import com.lowvision.keyboard.ui.keyboard.KeyboardViewModel
 
 class LowVisionKeyboardService : InputMethodService() {
@@ -19,7 +19,7 @@ class LowVisionKeyboardService : InputMethodService() {
 
     override fun onCreateInputView(): View {
         viewModel = KeyboardViewModel(inputBridge)
-        return SingleKeyView(this, viewModel)
+        return QwertyKeyboardView(this, viewModel)
     }
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {

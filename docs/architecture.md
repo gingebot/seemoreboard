@@ -112,7 +112,10 @@ app/
 │   │   ├── KeyboardViewModel.kt
 │   │   └── KeyboardState.kt
 │   ├── components/
-│   │   └── KeyButton.kt
+│   │   ├── QwertyKeyboardView.kt
+│   │   ├── KeyButtonView.kt
+│   │   ├── SingleKeyView.kt
+│   │   └── SingleKeyButton.kt   (pending Compose activation)
 │   ├── theme/
 │   │   └── Color.kt
 │   └── gestures/
