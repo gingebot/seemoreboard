@@ -20,4 +20,17 @@ class KeyboardViewModel(
         _state.update { it.copy(lastKeyPressed = key, pressCount = it.pressCount + 1) }
         Logging.log("Key pressed: $key")
     }
+
+    fun updateZoom(zoom: Float) {
+        _state.update { it.copy(zoomLevel = zoom.coerceIn(1.0f, 2.5f)) }
+    }
+
+    fun updatePan(dx: Float, dy: Float) {
+        _state.update {
+            it.copy(
+                offsetX = it.offsetX + dx,
+                offsetY = it.offsetY + dy
+            )
+        }
+    }
 }
