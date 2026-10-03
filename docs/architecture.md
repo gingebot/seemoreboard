@@ -227,6 +227,28 @@ The IME service hosts a ComposeView that renders:
 
 This ensures the keyboard UI is fully Compose‑driven rather than XML‑based.
 
+### Compose / IME Lifecycle Constraint
+
+Jetpack Compose's `WindowRecomposerFactory.LifecycleAware` requires a
+`ViewTreeLifecycleOwner` on the IME window's root view.  Because
+`InputMethodService` is an Android `Service` (not an `Activity` or `Dialog`),
+it does not provide a `LifecycleOwner` by default.  This is a known
+limitation, especially on Samsung and other OEM devices where the IME
+window structure uses a non‑standard root view (e.g. `parentPanel`) rather
+than the expected `DecorView`.
+
+**Current approach (MVP):**  A plain `View`‑based rendering in
+`ui/components/SingleKeyView.kt` is used to avoid the lifecycle issue.
+The rest of the architecture (ViewModel → InputConnectionBridge → Logging)
+is unchanged and fully operational.
+
+**Future migration:**  Compose will be enabled once a reliable lifecycle
+workaround is implemented — for example via `setWindowRecomposerFactory` in a
+Compose BOM version that exposes it publicly, or by successfully injecting a
+`LifecycleOwner` into the IME window's root view hierarchy.  The Compose files
+(`KeyboardScreen.kt`, `SingleKeyButton.kt`) remain in the repository marked
+as *pending activation*.
+
 ### AndroidManifest Declaration
 
 The IME service must be declared in `AndroidManifest.xml` with:
