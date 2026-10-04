@@ -39,6 +39,12 @@ class KeyboardViewModel(
     }
 
     fun onKeyPress(key: String) {
+        if (key == "\b" || key == "⌫") {
+            inputBridge.deleteCharacter()
+            _state.update { it.copy(lastKeyPressed = "⌫", pressCount = it.pressCount + 1) }
+            Logging.log("Key pressed: ⌫")
+            return
+        }
         val current = _state.value
         val char = if (current.activeLayer == KeyboardLayer.ALPHA &&
             current.shiftState != ShiftState.OFF) {
