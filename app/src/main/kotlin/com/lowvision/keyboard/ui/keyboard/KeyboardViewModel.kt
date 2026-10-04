@@ -80,6 +80,14 @@ class KeyboardViewModel(
         }
     }
 
+    fun openSettings() {
+        _state.update { it.copy(isSettingsOpen = true) }
+    }
+
+    fun closeSettings() {
+        _state.update { it.copy(isSettingsOpen = false) }
+    }
+
     fun updateZoom(zoom: Float) {
         _state.update { it.copy(zoomLevel = zoom.coerceIn(1.0f, 2.5f)) }
     }

@@ -13,5 +13,6 @@ data class KeyboardState(
     val hapticEnabled: Boolean = true,
     val highContrastEnabled: Boolean = true,
     val shiftState: ShiftState = ShiftState.OFF,
-    val activeLayer: KeyboardLayer = KeyboardLayer.ALPHA
+    val activeLayer: KeyboardLayer = KeyboardLayer.ALPHA,
+    val isSettingsOpen: Boolean = false
 )
