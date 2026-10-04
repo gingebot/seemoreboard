@@ -9,8 +9,11 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import com.lowvision.keyboard.domain.layout.LayoutCalculator
 import com.lowvision.keyboard.ui.gestures.ZoomPanHandlers
+import com.lowvision.keyboard.ui.keyboard.KeyboardLayer
 import com.lowvision.keyboard.ui.keyboard.KeyboardViewModel
+import com.lowvision.keyboard.ui.keyboard.ShiftState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -22,10 +25,14 @@ fun QwertyKeyboardView(
     context: Context,
     viewModel: KeyboardViewModel
 ): FrameLayout {
-    val normalRows = listOf("QWERTYUIOP", "ASDFGHJKL")
-    val bottomRow = "ZXCVBNM\u2699" // ZXCVBNM⚙
-
     val allKeyButtons = mutableListOf<Button>()
+    val MAX_KEYS_PER_ROW = 10
+
+    // Create the 3 key rows (10 buttons each) + modifier row up front
+    val row0Buttons = mutableListOf<Button>()
+    val row1Buttons = mutableListOf<Button>()
+    val row2Buttons = mutableListOf<Button>()
+    val allRows = listOf(row0Buttons, row1Buttons, row2Buttons)
 
     val innerContainer = LinearLayout(context).apply {
         orientation = LinearLayout.VERTICAL
@@ -33,15 +40,46 @@ fun QwertyKeyboardView(
         layoutParams = FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply {
-            gravity = Gravity.CENTER
-        }
+        ).apply { gravity = Gravity.CENTER }
 
-        for (row in normalRows) {
-            addView(createKeyRow(context, viewModel, row, allKeyButtons))
+        // Create 3 key rows, each with 10 buttons (empty slots get GONE)
+        for (rowIdx in 0..2) {
+            addView(createKeyRow(context, viewModel, MAX_KEYS_PER_ROW, allRows[rowIdx]))
+            allKeyButtons.addAll(allRows[rowIdx])
         }
-        addView(createKeyRow(context, viewModel, bottomRow, allKeyButtons))
     }
+
+    // Modifier row: Shift | ABC/123 | ⚙
+    val shiftButton: Button
+    val layerButton: Button
+    val settingsButton: Button
+    val modifierRow = LinearLayout(context).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER
+        layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
+        )
+
+        shiftButton = KeyButtonView(context, "\u21E7") {
+            val s = viewModel.state.value
+            if (s.hapticEnabled) performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+            viewModel.toggleShift()
+        }
+        addView(shiftButton)
+
+        layerButton = KeyButtonView(context, "ABC") {
+            val s = viewModel.state.value
+            if (s.hapticEnabled) performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+            viewModel.toggleLayer()
+        }
+        addView(layerButton)
+
+        settingsButton = KeyButtonView(context, "\u2699") {
+            toggleSettingsPanel(this@apply)
+        }
+        addView(settingsButton)
+    }
+    innerContainer.addView(modifierRow)
 
     lateinit var root: FrameLayout
 
@@ -152,6 +190,44 @@ fun QwertyKeyboardView(
         viewModel.state.collectLatest { state ->
             val bgColor = if (state.highContrastEnabled) 0xFF000000.toInt() else 0xFF333333.toInt()
             allKeyButtons.forEach { it.setBackgroundColor(bgColor) }
+            shiftButton.setBackgroundColor(bgColor)
+            layerButton.setBackgroundColor(bgColor)
+            settingsButton.setBackgroundColor(bgColor)
+
+            // Update shift button visual: OFF=normal, ON=highlighted, LOCK=border
+            val shiftBg = when (state.shiftState) {
+                ShiftState.OFF -> bgColor
+                ShiftState.ON -> 0xFF444444.toInt()
+                ShiftState.LOCK -> 0xFF666666.toInt()
+            }
+            shiftButton.setBackgroundColor(shiftBg)
+
+            // Update ABC/123 label
+            layerButton.text = if (state.activeLayer == KeyboardLayer.ALPHA) "123" else "ABC"
+
+            // Update key row labels & visibility based on current layer + shift
+            val layout = LayoutCalculator.getLayout(state.activeLayer)
+            for (rowIdx in 0..2) {
+                val rowChars = layout[rowIdx]
+                val buttons = allRows[rowIdx]
+                for (colIdx in 0 until MAX_KEYS_PER_ROW) {
+                    val btn = buttons[colIdx]
+                    val char = rowChars[colIdx]
+                    if (char.isEmpty()) {
+                        btn.visibility = View.GONE
+                    } else {
+                        btn.visibility = View.VISIBLE
+                        btn.tag = char
+                        btn.text = if (state.activeLayer == KeyboardLayer.ALPHA &&
+                            state.shiftState != ShiftState.OFF) {
+                            char.uppercase()
+                        } else {
+                            char
+                        }
+                    }
+                }
+            }
+
             settingsPanelHolder.updateFromState(state)
         }
     }
@@ -166,8 +242,8 @@ fun QwertyKeyboardView(
 private fun createKeyRow(
     context: Context,
     viewModel: KeyboardViewModel,
-    keys: String,
-    keyButtons: MutableList<Button>
+    count: Int,
+    buttons: MutableList<Button>
 ): LinearLayout {
     return LinearLayout(context).apply {
         orientation = LinearLayout.HORIZONTAL
@@ -176,21 +252,22 @@ private fun createKeyRow(
             LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
         )
 
-        for (char in keys) {
-            val label = char.toString()
-            val isSettings = label == "\u2699"
-            val btn = KeyButtonView(context, label, highContrast = true) {
-                if (isSettings) {
-                    toggleSettingsPanel(this@apply)
-                } else {
+        for (i in 0 until count) {
+            var captured: Button? = null
+            val btn = KeyButtonView(context, "", highContrast = true) {
+                val b = captured ?: return@KeyButtonView
+                val char = b.tag as? String ?: return@KeyButtonView
+                if (char.isNotEmpty()) {
                     if (viewModel.state.value.hapticEnabled) {
                         performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                     }
-                    viewModel.onKeyPress(label)
+                    viewModel.onKeyPress(char)
                 }
             }
+            captured = btn
+            btn.visibility = View.GONE
             addView(btn)
-            if (!isSettings) keyButtons.add(btn)
+            buttons.add(btn)
         }
     }
 }

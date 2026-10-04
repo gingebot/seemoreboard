@@ -26,7 +26,6 @@ MERGED from [androidx.activity:activity:1.8.2] /home/gingebot/.gradle/caches/tra
 MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] /home/gingebot/.gradle/caches/transforms-3/feafe4506e00f055cc53add47b9260a0/transformed/savedstate-ktx-1.2.1/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.savedstate:savedstate:1.2.1] /home/gingebot/.gradle/caches/transforms-3/040de899e265d6c45a386fd0e5e15c65/transformed/savedstate-1.2.1/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0] /home/gingebot/.gradle/caches/transforms-3/aca27ab5518a0c1fb21b10cba587b1e9/transformed/lifecycle-viewmodel-savedstate-2.7.0/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0] /home/gingebot/.gradle/caches/transforms-3/99a0ceda7a5b31e43675d93bb3cc711b/transformed/lifecycle-viewmodel-ktx-2.7.0/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.7.0] /home/gingebot/.gradle/caches/transforms-3/3d04aff4df0f768f379e34d5f0b314db/transformed/lifecycle-viewmodel-2.7.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-runtime-ktx:2.7.0] /home/gingebot/.gradle/caches/transforms-3/e988d893da54918c8afc17e2c51734b4/transformed/lifecycle-runtime-ktx-2.7.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.autofill:autofill:1.0.0] /home/gingebot/.gradle/caches/transforms-3/ed13784557a114bf4e20eb69e0d51286/transformed/autofill-1.0.0/AndroidManifest.xml:17:1-24:12
@@ -34,6 +33,7 @@ MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /home/gingeb
 MERGED from [androidx.core:core-ktx:1.12.0] /home/gingebot/.gradle/caches/transforms-3/760c49e260287e65438a700d022f8c6b/transformed/core-ktx-1.12.0/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.core:core:1.12.0] /home/gingebot/.gradle/caches/transforms-3/440a64c1659b3784956be1ef27019da1/transformed/core-1.12.0/AndroidManifest.xml:17:1-30:12
 MERGED from [androidx.lifecycle:lifecycle-runtime:2.7.0] /home/gingebot/.gradle/caches/transforms-3/c0811ff559e841342aebad900e726f1e/transformed/lifecycle-runtime-2.7.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0] /home/gingebot/.gradle/caches/transforms-3/99a0ceda7a5b31e43675d93bb3cc711b/transformed/lifecycle-viewmodel-ktx-2.7.0/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0] /home/gingebot/.gradle/caches/transforms-3/af014887db996c09301b8a0a4b947758/transformed/lifecycle-viewmodel-compose-2.7.0/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.ui:ui-android:1.6.1] /home/gingebot/.gradle/caches/transforms-3/5bbe67b4e1976cf3ed30f61ba556027f/transformed/ui-release/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.activity:activity-ktx:1.8.2] /home/gingebot/.gradle/caches/transforms-3/46b1e779e36541f6b63e5a9150272094/transformed/activity-ktx-1.8.2/AndroidManifest.xml:2:1-7:12
@@ -152,8 +152,6 @@ MERGED from [androidx.savedstate:savedstate:1.2.1] /home/gingebot/.gradle/caches
 MERGED from [androidx.savedstate:savedstate:1.2.1] /home/gingebot/.gradle/caches/transforms-3/040de899e265d6c45a386fd0e5e15c65/transformed/savedstate-1.2.1/AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0] /home/gingebot/.gradle/caches/transforms-3/aca27ab5518a0c1fb21b10cba587b1e9/transformed/lifecycle-viewmodel-savedstate-2.7.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0] /home/gingebot/.gradle/caches/transforms-3/aca27ab5518a0c1fb21b10cba587b1e9/transformed/lifecycle-viewmodel-savedstate-2.7.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0] /home/gingebot/.gradle/caches/transforms-3/99a0ceda7a5b31e43675d93bb3cc711b/transformed/lifecycle-viewmodel-ktx-2.7.0/AndroidManifest.xml:5:5-44
-MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0] /home/gingebot/.gradle/caches/transforms-3/99a0ceda7a5b31e43675d93bb3cc711b/transformed/lifecycle-viewmodel-ktx-2.7.0/AndroidManifest.xml:5:5-44
 MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.7.0] /home/gingebot/.gradle/caches/transforms-3/3d04aff4df0f768f379e34d5f0b314db/transformed/lifecycle-viewmodel-2.7.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.7.0] /home/gingebot/.gradle/caches/transforms-3/3d04aff4df0f768f379e34d5f0b314db/transformed/lifecycle-viewmodel-2.7.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-runtime-ktx:2.7.0] /home/gingebot/.gradle/caches/transforms-3/e988d893da54918c8afc17e2c51734b4/transformed/lifecycle-runtime-ktx-2.7.0/AndroidManifest.xml:20:5-44
@@ -168,6 +166,8 @@ MERGED from [androidx.core:core:1.12.0] /home/gingebot/.gradle/caches/transforms
 MERGED from [androidx.core:core:1.12.0] /home/gingebot/.gradle/caches/transforms-3/440a64c1659b3784956be1ef27019da1/transformed/core-1.12.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-runtime:2.7.0] /home/gingebot/.gradle/caches/transforms-3/c0811ff559e841342aebad900e726f1e/transformed/lifecycle-runtime-2.7.0/AndroidManifest.xml:5:5-44
 MERGED from [androidx.lifecycle:lifecycle-runtime:2.7.0] /home/gingebot/.gradle/caches/transforms-3/c0811ff559e841342aebad900e726f1e/transformed/lifecycle-runtime-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0] /home/gingebot/.gradle/caches/transforms-3/99a0ceda7a5b31e43675d93bb3cc711b/transformed/lifecycle-viewmodel-ktx-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0] /home/gingebot/.gradle/caches/transforms-3/99a0ceda7a5b31e43675d93bb3cc711b/transformed/lifecycle-viewmodel-ktx-2.7.0/AndroidManifest.xml:5:5-44
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0] /home/gingebot/.gradle/caches/transforms-3/af014887db996c09301b8a0a4b947758/transformed/lifecycle-viewmodel-compose-2.7.0/AndroidManifest.xml:5:5-44
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0] /home/gingebot/.gradle/caches/transforms-3/af014887db996c09301b8a0a4b947758/transformed/lifecycle-viewmodel-compose-2.7.0/AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.ui:ui-android:1.6.1] /home/gingebot/.gradle/caches/transforms-3/5bbe67b4e1976cf3ed30f61ba556027f/transformed/ui-release/AndroidManifest.xml:5:5-44

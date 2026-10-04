@@ -19,6 +19,12 @@ class KeyboardViewModel(
     private val _state = MutableStateFlow(KeyboardState())
     val state: StateFlow<KeyboardState> = _state.asStateFlow()
 
+    companion object {
+        private const val DOUBLE_TAP_MS = 500L
+    }
+
+    private var lastShiftTapMs = 0L
+
     init {
         viewModelScope.launch {
             settingsUseCases.settingsFlow.collect { settings ->
@@ -33,9 +39,45 @@ class KeyboardViewModel(
     }
 
     fun onKeyPress(key: String) {
-        inputBridge.typeCharacter(key)
-        _state.update { it.copy(lastKeyPressed = key, pressCount = it.pressCount + 1) }
-        Logging.log("Key pressed: $key")
+        val current = _state.value
+        val char = if (current.activeLayer == KeyboardLayer.ALPHA &&
+            current.shiftState != ShiftState.OFF) {
+            key.uppercase()
+        } else {
+            key
+        }
+        inputBridge.typeCharacter(char)
+        _state.update {
+            it.copy(
+                lastKeyPressed = char,
+                pressCount = it.pressCount + 1,
+                shiftState = if (it.shiftState == ShiftState.ON) ShiftState.OFF
+                else it.shiftState
+            )
+        }
+        Logging.log("Key pressed: $char")
+    }
+
+    fun toggleShift() {
+        _state.update {
+            val now = System.currentTimeMillis()
+            lastShiftTapMs = now
+            when (it.shiftState) {
+                ShiftState.OFF -> it.copy(shiftState = ShiftState.ON)
+                ShiftState.ON -> it.copy(shiftState = ShiftState.LOCK)
+                ShiftState.LOCK -> it.copy(shiftState = ShiftState.OFF)
+            }
+        }
+    }
+
+    fun toggleLayer() {
+        _state.update {
+            it.copy(
+                activeLayer = if (it.activeLayer == KeyboardLayer.ALPHA)
+                    KeyboardLayer.SYMBOLS else KeyboardLayer.ALPHA,
+                shiftState = ShiftState.OFF
+            )
+        }
     }
 
     fun updateZoom(zoom: Float) {

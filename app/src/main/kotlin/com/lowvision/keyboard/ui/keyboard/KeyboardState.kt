@@ -1,5 +1,9 @@
 package com.lowvision.keyboard.ui.keyboard
 
+enum class ShiftState { OFF, ON, LOCK }
+
+enum class KeyboardLayer { ALPHA, SYMBOLS }
+
 data class KeyboardState(
     val lastKeyPressed: String = "",
     val pressCount: Int = 0,
@@ -7,5 +11,7 @@ data class KeyboardState(
     val offsetX: Float = 0f,
     val offsetY: Float = 0f,
     val hapticEnabled: Boolean = true,
-    val highContrastEnabled: Boolean = true
+    val highContrastEnabled: Boolean = true,
+    val shiftState: ShiftState = ShiftState.OFF,
+    val activeLayer: KeyboardLayer = KeyboardLayer.ALPHA
 )
