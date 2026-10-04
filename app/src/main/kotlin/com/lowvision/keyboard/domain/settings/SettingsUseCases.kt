@@ -1,4 +1,24 @@
 package com.lowvision.keyboard.domain.settings
 
-// Placeholder — will be implemented in a future feature spec.
-object SettingsUseCases
+import com.lowvision.keyboard.data.settings.DataStoreSettingsRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
+
+class SettingsUseCases(
+    private val repository: DataStoreSettingsRepository
+) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    val settingsFlow: Flow<KeyboardSettings> = repository.settingsFlow
+
+    fun setHapticEnabled(enabled: Boolean) {
+        scope.launch { repository.setHapticEnabled(enabled) }
+    }
+
+    fun setHighContrastEnabled(enabled: Boolean) {
+        scope.launch { repository.setHighContrastEnabled(enabled) }
+    }
+}

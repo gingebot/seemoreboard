@@ -9,13 +9,15 @@ import android.widget.LinearLayout
 fun KeyButtonView(
     context: Context,
     label: String,
+    highContrast: Boolean = true,
     onClick: () -> Unit
 ): Button {
+    val bgColor = if (highContrast) 0xFF000000.toInt() else 0xFF333333.toInt()
     return Button(context).apply {
         text = label
         textSize = 24f
         gravity = Gravity.CENTER
-        setBackgroundColor(0xFF000000.toInt())
+        setBackgroundColor(bgColor)
         setTextColor(0xFFFFFFFF.toInt())
         setOnClickListener { onClick() }
 

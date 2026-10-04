@@ -1,19 +1,36 @@
 package com.lowvision.keyboard.ui.keyboard
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.lowvision.keyboard.domain.settings.SettingsUseCases
 import com.lowvision.keyboard.ime.integration.InputConnectionBridge
 import com.lowvision.keyboard.utils.Logging
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class KeyboardViewModel(
-    private val inputBridge: InputConnectionBridge
+    private val inputBridge: InputConnectionBridge,
+    private val settingsUseCases: SettingsUseCases
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(KeyboardState())
     val state: StateFlow<KeyboardState> = _state.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            settingsUseCases.settingsFlow.collect { settings ->
+                _state.update {
+                    it.copy(
+                        hapticEnabled = settings.hapticEnabled,
+                        highContrastEnabled = settings.highContrastEnabled
+                    )
+                }
+            }
+        }
+    }
 
     fun onKeyPress(key: String) {
         inputBridge.typeCharacter(key)
@@ -32,5 +49,15 @@ class KeyboardViewModel(
                 offsetY = it.offsetY + dy
             )
         }
+    }
+
+    fun toggleHaptics() {
+        val current = _state.value.hapticEnabled
+        settingsUseCases.setHapticEnabled(!current)
+    }
+
+    fun toggleHighContrast() {
+        val current = _state.value.highContrastEnabled
+        settingsUseCases.setHighContrastEnabled(!current)
     }
 }
