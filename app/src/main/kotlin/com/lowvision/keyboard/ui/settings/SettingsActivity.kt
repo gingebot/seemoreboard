@@ -1,5 +1,8 @@
-package com.lowvision.keyboard.ui.components
+package com.lowvision.keyboard.ui.settings
 
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -17,22 +20,49 @@ import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lowvision.keyboard.ui.keyboard.KeyboardState
+import com.lowvision.keyboard.data.settings.DataStoreSettingsRepository
+import com.lowvision.keyboard.domain.settings.KeyboardSettings
+import com.lowvision.keyboard.domain.settings.SettingsUseCases
+import com.lowvision.keyboard.ui.components.KeyButton
+
+class SettingsActivity : ComponentActivity() {
+
+    private lateinit var settingsUseCases: SettingsUseCases
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val repository = DataStoreSettingsRepository(applicationContext)
+        settingsUseCases = SettingsUseCases(repository)
+
+        setContent {
+            SettingsScreen(settingsUseCases, onClose = { finish() })
+        }
+    }
+}
 
 @Composable
-fun SettingsPanel(
-    state: KeyboardState,
-    onZoomChange: (Float) -> Unit,
-    onToggleHaptics: () -> Unit,
-    onToggleHighContrast: () -> Unit,
-    onClose: () -> Unit
-) {
+private fun SettingsScreen(useCases: SettingsUseCases, onClose: () -> Unit) {
+    val settings by useCases.settingsFlow.collectAsState(initial = KeyboardSettings())
+    var zoomValue by remember { mutableFloatStateOf(settings.zoomLevel) }
+
+    // Sync zoomValue when persisted settings load (async after initial 1f default)
+    LaunchedEffect(settings.zoomLevel) {
+        zoomValue = settings.zoomLevel
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -45,13 +75,16 @@ fun SettingsPanel(
 
         // ---- Zoom Slider ----
         Text(
-            text = "Zoom: %.1fx".format(state.zoomLevel),
+            text = "Zoom: %.1fx".format(zoomValue),
             color = Color.White,
             fontSize = 22.sp
         )
         Slider(
-            value = state.zoomLevel,
-            onValueChange = onZoomChange,
+            value = zoomValue,
+            onValueChange = {
+                zoomValue = it
+                useCases.setZoomLevel(it)
+            },
             valueRange = 1f..3f,
             modifier = Modifier.fillMaxWidth(),
             colors = androidx.compose.material.SliderDefaults.colors(
@@ -72,9 +105,9 @@ fun SettingsPanel(
         ) {
             KeyButton(
                 label = "k",
-                highContrast = state.highContrastEnabled,
+                highContrast = settings.highContrastEnabled,
                 enabled = false,
-                modifier = Modifier.scale(state.zoomLevel),
+                modifier = Modifier.scale(zoomValue),
                 onClick = {}
             )
         }
@@ -83,14 +116,14 @@ fun SettingsPanel(
 
         RowSetting(
             label = "Haptics",
-            checked = state.hapticEnabled,
-            onToggle = onToggleHaptics
+            checked = settings.hapticEnabled,
+            onToggle = { useCases.setHapticEnabled(!settings.hapticEnabled) }
         )
 
         RowSetting(
             label = "High Contrast",
-            checked = state.highContrastEnabled,
-            onToggle = onToggleHighContrast
+            checked = settings.highContrastEnabled,
+            onToggle = { useCases.setHighContrastEnabled(!settings.highContrastEnabled) }
         )
 
         Spacer(Modifier.height(32.dp))

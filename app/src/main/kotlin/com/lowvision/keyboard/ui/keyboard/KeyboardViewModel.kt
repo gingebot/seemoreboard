@@ -1,9 +1,12 @@
 package com.lowvision.keyboard.ui.keyboard
 
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lowvision.keyboard.domain.settings.SettingsUseCases
 import com.lowvision.keyboard.ime.integration.InputConnectionBridge
+import com.lowvision.keyboard.ui.settings.SettingsActivity
 import com.lowvision.keyboard.utils.Logging
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,6 +15,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class KeyboardViewModel(
+    private val appContext: Context,
     private val inputBridge: InputConnectionBridge,
     private val settingsUseCases: SettingsUseCases
 ) : ViewModel() {
@@ -87,12 +91,11 @@ class KeyboardViewModel(
         }
     }
 
-    fun openSettings() {
-        _state.update { it.copy(isSettingsOpen = true) }
-    }
-
-    fun closeSettings() {
-        _state.update { it.copy(isSettingsOpen = false) }
+    fun openSettingsActivity() {
+        appContext.startActivity(
+            Intent(appContext, SettingsActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
     }
 
     fun updatePan(dx: Float, dy: Float) {

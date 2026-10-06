@@ -49,7 +49,7 @@ class LowVisionKeyboardService : InputMethodService() {
     }
 
     override fun onCreateInputView(): View {
-        viewModel = KeyboardViewModel(inputBridge, settingsUseCases)
+        viewModel = KeyboardViewModel(applicationContext, inputBridge, settingsUseCases)
 
         val metrics = resources.displayMetrics
         val density = metrics.density

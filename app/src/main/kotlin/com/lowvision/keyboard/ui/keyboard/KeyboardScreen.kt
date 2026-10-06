@@ -19,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import com.lowvision.keyboard.domain.layout.LayoutCalculator
 import com.lowvision.keyboard.ui.components.KeyButton
-import com.lowvision.keyboard.ui.components.SettingsPanel
 import com.lowvision.keyboard.ui.gestures.PanContainer
 import androidx.compose.ui.unit.dp
 
@@ -48,20 +47,11 @@ fun KeyboardScreen(viewModel: KeyboardViewModel) {
                     },
                     onToggleShift = { viewModel.toggleShift() },
                     onToggleLayer = { viewModel.toggleLayer() },
-                    onOpenSettings = { viewModel.openSettings() }
+                    onOpenSettings = { viewModel.openSettingsActivity() }
             )
         }
 
-        if (state.isSettingsOpen) {
-            SettingsPanel(
-                state = state,
-                onZoomChange = { viewModel.setZoomLevel(it) },
-                onToggleHaptics = { viewModel.toggleHaptics() },
-                onToggleHighContrast = { viewModel.toggleHighContrast() },
-                onClose = { viewModel.closeSettings() }
-            )
         }
-    }
 }
 
 @Composable

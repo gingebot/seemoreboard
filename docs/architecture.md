@@ -27,6 +27,7 @@ An Android keyboard (IME) designed for people with low vision, with:
 
 - Settings Layer  
   Stores preferences (zoom, pan sensitivity, haptics, audio) via DataStore.
+  Settings UI is a full‑screen Activity launched from IME (⚙ key). Android system settings integration is declared via `android.view.im.settingsActivity` metadata but not honoured by Samsung devices (metadata reads as null system‑side for third‑party IMEs).
 
 - Accessibility Layer  
   Integrates accessibility APIs and TextToSpeech (later roadmap).
@@ -112,8 +113,9 @@ app/
 │   │   ├── KeyboardViewModel.kt
 │   │   └── KeyboardState.kt
 │   ├── components/
-│   │   ├── KeyButton.kt
-│   │   └── SettingsPanel.kt
+│   │   └── KeyButton.kt
+│   ├── settings/
+│   │   └── SettingsActivity.kt
 │   ├── theme/
 │   │   └── Color.kt
 │   └── gestures/
@@ -189,11 +191,12 @@ This structure ensures:
 
 ## 4.3 Settings Flow
 
-1. User changes settings (zoom slider, haptic toggle, etc.).
-2. `SettingsUseCases` update `KeyboardSettings`.
-3. `DataStoreSettingsRepository` persists changes.
-4. `KeyboardViewModel` observes settings via `Flow<KeyboardSettings>` and applies reactively.
-5. Zoom slider also updates `KeyboardState` immediately for smooth tracking.
+1. User taps ⚙ key → IME launches `SettingsActivity` via `Intent.FLAG_ACTIVITY_NEW_TASK`.
+2. Android system settings may launch `SettingsActivity` via `android.view.im.settingsActivity` manifest meta‑data — works on stock Android; **not honoured on Samsung devices** (third‑party IME metadata is ignored).
+3. User changes settings (zoom slider, haptic toggle, etc.).
+4. `SettingsUseCases` update `KeyboardSettings` persisted via `DataStoreSettingsRepository`.
+5. `KeyboardViewModel` observes settings via `Flow<KeyboardSettings>` and applies reactively to the IME.
+6. SettingsActivity uses its own `zoomValue` local state for smooth slider tracking, persisting via `SettingsUseCases`.
 
 # 5. IME Integration
 
