@@ -17,7 +17,7 @@ An Android keyboard (IME) designed for people with low vision, with:
   Android `InputMethodService` implementation that integrates with the system as a keyboard.
 
 - Keyboard UI Layer (Jetpack Compose)  
-  Renders the keyboard, handles zoom/pan, processes touch input.
+  Renders the keyboard, handles pan with fixed 2× zoom, processes touch input.
 
 - Keyboard Layout Engine  
   Defines key positions, labels, hitboxes, and recalculates layout under zoom/pan.
@@ -117,7 +117,7 @@ app/
 │   ├── theme/
 │   │   └── Color.kt
 │   └── gestures/
-│       └── ComposeZoomPan.kt
+│       └── PanContainer.kt
 │
 ├── domain/
 │   ├── layout/
@@ -174,14 +174,15 @@ This structure ensures:
 
 ## 4.2 Zoom & Pan Flow
 
-1. User performs pinch or drag gesture on the keyboard surface.
-2. `ZoomPanHandlers` interpret gestures and update:
-   - `zoomLevel`
-   - `offsetX`
-   - `offsetY`
-3. `KeyboardViewModel` updates `KeyboardState` with new zoom/pan values.
-4. `KeyboardScreen` recomposes with updated scale/offset.
-5. `LayoutCalculator` recalculates key hitboxes based on zoom/pan.
+1. User performs drag gesture on the keyboard surface.
+2. `PanContainer` interprets gestures and updates:
+   - `offsetX` via drag and inertial fling
+   - `offsetY` via drag and inertial fling
+   - tap‑to‑cancel during fling
+3. Zoom is fixed at 2× for this transition phase (no pinch‑zoom).
+4. `KeyboardViewModel.updatePan()` updates `KeyboardState` offset values.
+5. `KeyboardScreen` recomposes with `graphicsLayer` scale/translation.
+6. `LayoutCalculator` recalculates key hitboxes based on zoom/pan.
 
 ---
 
@@ -443,7 +444,7 @@ Settings must be applied when:
 - the input view starts (`onStartInputView`)  
 - the user changes settings mid‑session  
 
-Zoom and pan values must be applied immediately to avoid disorientation.
+Pan offset values must be applied immediately to avoid disorientation.
 
 ---
 
@@ -650,7 +651,7 @@ Settings-related classes end with:
 
 Use **camelCase** for functions:
 
-- `updateZoomLevel()`
+- `updatePan()`
 - `handleKeyPress()`
 - `calculateLayout()`
 - `applySettings()`
@@ -856,7 +857,7 @@ Future gesture features may include:
 
 These integrate into:
 
-- `ui.gestures/ZoomPanHandlers`
+- `ui.gestures/PanContainer.kt`
 - `KeyboardViewModel`
 
 ---

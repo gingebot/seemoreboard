@@ -13,87 +13,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalView
 import com.lowvision.keyboard.domain.layout.LayoutCalculator
 import com.lowvision.keyboard.ui.components.KeyButton
 import com.lowvision.keyboard.ui.components.SettingsPanel
-import com.lowvision.keyboard.ui.gestures.ComposeZoomPan
+import com.lowvision.keyboard.ui.gestures.PanContainer
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun KeyboardScreen(viewModel: KeyboardViewModel) {
     val state by viewModel.state.collectAsState()
     val view = LocalView.current
-    var containerWidth by remember { mutableIntStateOf(0) }
-    var containerHeight by remember { mutableIntStateOf(0) }
-
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF1A1A1A))
-            .onSizeChanged { size ->
-                containerWidth = size.width
-                containerHeight = size.height
-            }
-    ) {
-        ComposeZoomPan(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF1A1A1A))
+        ) {
+        PanContainer(
             zoom = state.zoomLevel,
             offsetX = state.offsetX,
             offsetY = state.offsetY,
-            onZoomChange = {
-                viewModel.updateZoom(it)
-                val st = viewModel.state.value
-                val iw = containerWidth * st.zoomLevel
-                val ih = containerHeight * st.zoomLevel
-                val rw = containerWidth.toFloat()
-                val rh = containerHeight.toFloat()
-                if (iw <= rw && ih <= rh) {
-                    if (st.offsetX != 0f || st.offsetY != 0f) {
-                        viewModel.updatePan(-st.offsetX, -st.offsetY)
-                    }
-                } else {
-                    val maxTx = rw * (st.zoomLevel - 1f) / 2f
-                    val minTx = rw * (1f - st.zoomLevel) / 2f
-                    val maxTy = rh * (st.zoomLevel - 1f) / 2f
-                    val minTy = rh * (1f - st.zoomLevel) / 2f
-                    val cx = st.offsetX.coerceIn(minTx, maxTx)
-                    val cy = st.offsetY.coerceIn(minTy, maxTy)
-                    if (cx != st.offsetX || cy != st.offsetY) {
-                        viewModel.updatePan(cx - st.offsetX, cy - st.offsetY)
-                    }
-                }
-            },
-            onPanChange = { dx, dy ->
-                val state = viewModel.state.value
-                val innerW = containerWidth * state.zoomLevel
-                val innerH = containerHeight * state.zoomLevel
-                val rw = containerWidth.toFloat()
-                val rh = containerHeight.toFloat()
-
-                if (innerW <= rw && innerH <= rh) {
-                    if (state.offsetX != 0f || state.offsetY != 0f) {
-                        viewModel.updatePan(-state.offsetX, -state.offsetY)
-                    }
-                } else {
-                    viewModel.updatePan(dx, dy)
-                    val ns = viewModel.state.value
-                    val maxTx = rw * (ns.zoomLevel - 1f) / 2f
-                    val minTx = rw * (1f - ns.zoomLevel) / 2f
-                    val maxTy = rh * (ns.zoomLevel - 1f) / 2f
-                    val minTy = rh * (1f - ns.zoomLevel) / 2f
-                    val cx = ns.offsetX.coerceIn(minTx, maxTx)
-                    val cy = ns.offsetY.coerceIn(minTy, maxTy)
-                    if (cx != ns.offsetX || cy != ns.offsetY) {
-                        viewModel.updatePan(cx - ns.offsetX, cy - ns.offsetY)
-                    }
-                }
-            }
+            onPanChange = { dx, dy -> viewModel.updatePan(dx, dy) }
         ) {
             KeyboardLayout(
                 state = state,
