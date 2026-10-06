@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -16,42 +17,56 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 import com.lowvision.keyboard.domain.layout.LayoutCalculator
 import com.lowvision.keyboard.ui.components.KeyButton
 import com.lowvision.keyboard.ui.gestures.PanContainer
-import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalDensity
 
 @Composable
-fun KeyboardScreen(viewModel: KeyboardViewModel) {
+fun KeyboardScreen(
+    viewModel: KeyboardViewModel,
+    onHeightChanged: (heightPx: Int) -> Unit = {}
+) {
     val state by viewModel.state.collectAsState()
     val view = LocalView.current
+    val density = LocalDensity.current
+
+    // Sync IME window height after every keyboardHeightDp change
+    LaunchedEffect(state.keyboardHeightDp) {
+        val heightPx = with(density) { state.keyboardHeightDp.dp.roundToPx() }
+        onHeightChanged(heightPx)
+    }
+
     Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFF1A1A1A))
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(with(density) { state.keyboardHeightDp.dp })
+            .background(Color(0xFF1A1A1A))
+    ) {
+        PanContainer(
+            zoom = state.zoomLevel,
+            offsetX = state.offsetX,
+            offsetY = state.offsetY,
+            onPanChange = { dx, dy -> viewModel.updatePan(dx, dy) }
         ) {
-            PanContainer(
-                zoom = state.zoomLevel,
-                offsetX = state.offsetX,
-                offsetY = state.offsetY,
-                onPanChange = { dx, dy -> viewModel.updatePan(dx, dy) }
-            ) {
-                KeyboardLayout(
-                    state = state,
-                    onKeyPress = { key ->
-                        if (state.hapticEnabled) {
-                            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                        }
-                        viewModel.onKeyPress(key)
-                    },
-                    onToggleShift = { viewModel.toggleShift() },
-                    onToggleLayer = { viewModel.toggleLayer() },
-                    onOpenSettings = { viewModel.openSettingsActivity() }
+            KeyboardLayout(
+                state = state,
+                onKeyPress = { key ->
+                    if (state.hapticEnabled) {
+                        view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                    }
+                    viewModel.onKeyPress(key)
+                },
+                onToggleShift = { viewModel.toggleShift() },
+                onToggleLayer = { viewModel.toggleLayer() },
+                onOpenSettings = { viewModel.openSettingsActivity() }
             )
         }
-
-        }
+    }
 }
 
 @Composable

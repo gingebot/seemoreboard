@@ -36,7 +36,8 @@ class KeyboardViewModel(
                     it.copy(
                         zoomLevel = settings.zoomLevel,
                         hapticEnabled = settings.hapticEnabled,
-                        highContrastEnabled = settings.highContrastEnabled
+                        highContrastEnabled = settings.highContrastEnabled,
+                        keyboardHeightDp = settings.keyboardHeightDp
                     )
                 }
             }
@@ -120,5 +121,11 @@ class KeyboardViewModel(
     fun setZoomLevel(level: Float) {
         _state.update { it.copy(zoomLevel = level.coerceIn(1f, 3f)) }
         settingsUseCases.setZoomLevel(level)
+    }
+
+    fun setKeyboardHeightDp(dp: Int) {
+        val clamped = dp.coerceIn(200, 600)
+        _state.update { it.copy(keyboardHeightDp = clamped) }
+        settingsUseCases.setKeyboardHeightDp(clamped)
     }
 }

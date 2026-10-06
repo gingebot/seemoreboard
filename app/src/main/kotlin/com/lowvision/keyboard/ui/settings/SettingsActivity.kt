@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,6 +37,7 @@ import com.lowvision.keyboard.data.settings.DataStoreSettingsRepository
 import com.lowvision.keyboard.domain.settings.KeyboardSettings
 import com.lowvision.keyboard.domain.settings.SettingsUseCases
 import com.lowvision.keyboard.ui.components.KeyButton
+import kotlin.math.roundToInt
 
 class SettingsActivity : ComponentActivity() {
 
@@ -57,10 +59,14 @@ class SettingsActivity : ComponentActivity() {
 private fun SettingsScreen(useCases: SettingsUseCases, onClose: () -> Unit) {
     val settings by useCases.settingsFlow.collectAsState(initial = KeyboardSettings())
     var zoomValue by remember { mutableFloatStateOf(settings.zoomLevel) }
+    var heightValue by remember { mutableIntStateOf(settings.keyboardHeightDp) }
 
-    // Sync zoomValue when persisted settings load (async after initial 1f default)
+    // Sync local state when persisted settings load (async after initial defaults)
     LaunchedEffect(settings.zoomLevel) {
         zoomValue = settings.zoomLevel
+    }
+    LaunchedEffect(settings.keyboardHeightDp) {
+        heightValue = settings.keyboardHeightDp
     }
 
     Column(
@@ -86,6 +92,32 @@ private fun SettingsScreen(useCases: SettingsUseCases, onClose: () -> Unit) {
                 useCases.setZoomLevel(it)
             },
             valueRange = 1f..3f,
+            modifier = Modifier.fillMaxWidth(),
+            colors = androidx.compose.material.SliderDefaults.colors(
+                thumbColor = Color.White,
+                activeTrackColor = Color(0xFF666666),
+                inactiveTrackColor = Color(0xFF333333)
+            )
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        // ---- Height Slider ----
+        Text(
+            text = "Keyboard Height: ${heightValue}dp",
+            color = Color.White,
+            fontSize = 22.sp
+        )
+        Slider(
+            value = heightValue.toFloat(),
+            onValueChange = {
+                // Step in increments of 10dp
+                val stepped = (it / 10f).roundToInt() * 10
+                heightValue = stepped
+                useCases.setKeyboardHeightDp(stepped)
+            },
+            valueRange = 200f..600f,
+            steps = 39, // (600-200)/10 - 1 = 39 discrete steps
             modifier = Modifier.fillMaxWidth(),
             colors = androidx.compose.material.SliderDefaults.colors(
                 thumbColor = Color.White,

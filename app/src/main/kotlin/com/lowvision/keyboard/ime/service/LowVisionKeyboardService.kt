@@ -2,7 +2,6 @@ package com.lowvision.keyboard.ime.service
 
 import android.inputmethodservice.InputMethodService
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.FrameLayout
@@ -51,20 +50,30 @@ class LowVisionKeyboardService : InputMethodService() {
     override fun onCreateInputView(): View {
         viewModel = KeyboardViewModel(applicationContext, inputBridge, settingsUseCases)
 
-        val metrics = resources.displayMetrics
-        val density = metrics.density
-        val keyboardHeightPx = (56 * 4 * density).toInt()
-
+        val density = resources.displayMetrics.density
+        val initialHeightPx = (350 * density).toInt()
         window?.window?.setLayout(
             WindowManager.LayoutParams.MATCH_PARENT,
-            keyboardHeightPx
+            initialHeightPx
         )
 
         val composeView = ComposeView(this).apply {
-            setContent { KeyboardScreen(viewModel) }
+            setContent {
+                KeyboardScreen(
+                    viewModel = viewModel,
+                    onHeightChanged = { heightPx ->
+                        if (heightPx > 0) {
+                            window?.window?.setLayout(
+                                WindowManager.LayoutParams.MATCH_PARENT,
+                                heightPx
+                            )
+                        }
+                    }
+                )
+            }
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
-                keyboardHeightPx
+                FrameLayout.LayoutParams.MATCH_PARENT
             )
         }
 

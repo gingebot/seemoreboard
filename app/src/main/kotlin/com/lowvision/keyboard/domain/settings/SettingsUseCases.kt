@@ -25,4 +25,8 @@ class SettingsUseCases(
     fun setZoomLevel(level: Float) {
         scope.launch { repository.setZoomLevel(level) }
     }
+
+    fun setKeyboardHeightDp(dp: Int) {
+        scope.launch { repository.setKeyboardHeightDp(dp) }
+    }
 }

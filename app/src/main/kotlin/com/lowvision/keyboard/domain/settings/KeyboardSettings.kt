@@ -5,5 +5,6 @@ data class KeyboardSettings(
     val panSensitivity: Float = 1.0f,
     val hapticEnabled: Boolean = true,
     val audioEnabled: Boolean = false,
-    val highContrastEnabled: Boolean = true
+    val highContrastEnabled: Boolean = true,
+    val keyboardHeightDp: Int = 350
 )

@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.lowvision.keyboard.domain.settings.KeyboardSettings
 import kotlinx.coroutines.flow.Flow
@@ -22,12 +23,14 @@ class DataStoreSettingsRepository(context: Context) {
     private val hapticEnabledKey = booleanPreferencesKey("haptic_enabled")
     private val highContrastEnabledKey = booleanPreferencesKey("high_contrast_enabled")
     private val zoomLevelKey = floatPreferencesKey("zoom_level")
+    private val keyboardHeightDpKey = intPreferencesKey("keyboard_height_dp")
 
     val settingsFlow: Flow<KeyboardSettings> = appContext.keyboardDataStore.data.map { prefs ->
         KeyboardSettings(
             zoomLevel = prefs[zoomLevelKey] ?: 1f,
             hapticEnabled = prefs[hapticEnabledKey] ?: true,
-            highContrastEnabled = prefs[highContrastEnabledKey] ?: true
+            highContrastEnabled = prefs[highContrastEnabledKey] ?: true,
+            keyboardHeightDp = prefs[keyboardHeightDpKey] ?: 350
         )
     }
 
@@ -46,6 +49,12 @@ class DataStoreSettingsRepository(context: Context) {
     suspend fun setZoomLevel(level: Float) {
         appContext.keyboardDataStore.edit { prefs ->
             prefs[zoomLevelKey] = level.coerceIn(1f, 3f)
+        }
+    }
+
+    suspend fun setKeyboardHeightDp(dp: Int) {
+        appContext.keyboardDataStore.edit { prefs ->
+            prefs[keyboardHeightDpKey] = dp.coerceIn(200, 600)
         }
     }
 }
