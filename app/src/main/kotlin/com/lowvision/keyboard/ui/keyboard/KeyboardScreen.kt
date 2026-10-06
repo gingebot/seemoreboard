@@ -32,29 +32,30 @@ fun KeyboardScreen(viewModel: KeyboardViewModel) {
                 .fillMaxSize()
                 .background(Color(0xFF1A1A1A))
         ) {
-        PanContainer(
-            zoom = state.zoomLevel,
-            offsetX = state.offsetX,
-            offsetY = state.offsetY,
-            onPanChange = { dx, dy -> viewModel.updatePan(dx, dy) }
-        ) {
-            KeyboardLayout(
-                state = state,
-                onKeyPress = { key ->
-                    if (state.hapticEnabled) {
-                        view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                    }
-                    viewModel.onKeyPress(key)
-                },
-                onToggleShift = { viewModel.toggleShift() },
-                onToggleLayer = { viewModel.toggleLayer() },
-                onOpenSettings = { viewModel.openSettings() }
+            PanContainer(
+                zoom = state.zoomLevel,
+                offsetX = state.offsetX,
+                offsetY = state.offsetY,
+                onPanChange = { dx, dy -> viewModel.updatePan(dx, dy) }
+            ) {
+                KeyboardLayout(
+                    state = state,
+                    onKeyPress = { key ->
+                        if (state.hapticEnabled) {
+                            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                        }
+                        viewModel.onKeyPress(key)
+                    },
+                    onToggleShift = { viewModel.toggleShift() },
+                    onToggleLayer = { viewModel.toggleLayer() },
+                    onOpenSettings = { viewModel.openSettings() }
             )
         }
 
         if (state.isSettingsOpen) {
             SettingsPanel(
                 state = state,
+                onZoomChange = { viewModel.setZoomLevel(it) },
                 onToggleHaptics = { viewModel.toggleHaptics() },
                 onToggleHighContrast = { viewModel.toggleHighContrast() },
                 onClose = { viewModel.closeSettings() }

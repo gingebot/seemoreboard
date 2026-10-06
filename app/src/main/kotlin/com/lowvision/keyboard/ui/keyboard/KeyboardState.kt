@@ -7,7 +7,7 @@ enum class KeyboardLayer { ALPHA, SYMBOLS }
 data class KeyboardState(
     val lastKeyPressed: String = "",
     val pressCount: Int = 0,
-    val zoomLevel: Float = 2f,
+    val zoomLevel: Float = 1f,
     val offsetX: Float = 0f,
     val offsetY: Float = 0f,
     val hapticEnabled: Boolean = true,

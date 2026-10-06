@@ -2,6 +2,7 @@ package com.lowvision.keyboard.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,12 +12,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Slider
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,6 +28,7 @@ import com.lowvision.keyboard.ui.keyboard.KeyboardState
 @Composable
 fun SettingsPanel(
     state: KeyboardState,
+    onZoomChange: (Float) -> Unit,
     onToggleHaptics: () -> Unit,
     onToggleHighContrast: () -> Unit,
     onClose: () -> Unit
@@ -39,14 +43,52 @@ fun SettingsPanel(
     ) {
         Spacer(Modifier.height(16.dp))
 
+        // ---- Zoom Slider ----
+        Text(
+            text = "Zoom: %.1fx".format(state.zoomLevel),
+            color = Color.White,
+            fontSize = 22.sp
+        )
+        Slider(
+            value = state.zoomLevel,
+            onValueChange = onZoomChange,
+            valueRange = 1f..3f,
+            modifier = Modifier.fillMaxWidth(),
+            colors = androidx.compose.material.SliderDefaults.colors(
+                thumbColor = Color.White,
+                activeTrackColor = Color(0xFF666666),
+                inactiveTrackColor = Color(0xFF333333)
+            )
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        // ---- Preview Key ----
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            KeyButton(
+                label = "k",
+                highContrast = state.highContrastEnabled,
+                enabled = false,
+                modifier = Modifier.scale(state.zoomLevel),
+                onClick = {}
+            )
+        }
+
+        Spacer(Modifier.height(32.dp))
+
         RowSetting(
-            label = "Haptics Enabled",
+            label = "Haptics",
             checked = state.hapticEnabled,
             onToggle = onToggleHaptics
         )
 
         RowSetting(
-            label = "High-Contrast Mode",
+            label = "High Contrast",
             checked = state.highContrastEnabled,
             onToggle = onToggleHighContrast
         )

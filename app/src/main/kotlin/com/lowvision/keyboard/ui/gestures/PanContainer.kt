@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -28,7 +29,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
 import kotlin.math.abs
-import kotlin.math.roundToInt
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -65,6 +65,20 @@ fun PanContainer(
         val halfX = (excessX / 2f).coerceAtLeast(0f)
         val halfY = (excessY / 2f).coerceAtLeast(0f)
         return Pair(halfX, halfY)
+    }
+
+    // Reclamp currentOffset when zoom changes (boundaries shift)
+    LaunchedEffect(zoom) {
+        if (viewportSize == IntSize.Zero || contentSize == IntSize.Zero) return@LaunchedEffect
+        val (halfX, halfY) = clampRange()
+        val clampedX = currentOffset.value.x.coerceIn(-halfX, halfX)
+        val clampedY = currentOffset.value.y.coerceIn(-halfY, halfY)
+        if (clampedX != currentOffset.value.x || clampedY != currentOffset.value.y) {
+            val deltaX = clampedX - currentOffset.value.x
+            val deltaY = clampedY - currentOffset.value.y
+            currentOffset.value = Offset(clampedX, clampedY)
+            onPanChange(deltaX, deltaY)
+        }
     }
 
     val draggableState = rememberDraggable2DState { delta ->

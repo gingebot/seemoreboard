@@ -30,6 +30,7 @@ class KeyboardViewModel(
             settingsUseCases.settingsFlow.collect { settings ->
                 _state.update {
                     it.copy(
+                        zoomLevel = settings.zoomLevel,
                         hapticEnabled = settings.hapticEnabled,
                         highContrastEnabled = settings.highContrastEnabled
                     )
@@ -111,5 +112,10 @@ class KeyboardViewModel(
     fun toggleHighContrast() {
         val current = _state.value.highContrastEnabled
         settingsUseCases.setHighContrastEnabled(!current)
+    }
+
+    fun setZoomLevel(level: Float) {
+        _state.update { it.copy(zoomLevel = level.coerceIn(1f, 3f)) }
+        settingsUseCases.setZoomLevel(level)
     }
 }

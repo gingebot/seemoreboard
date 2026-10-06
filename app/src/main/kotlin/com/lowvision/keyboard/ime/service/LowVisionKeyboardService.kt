@@ -3,6 +3,7 @@ package com.lowvision.keyboard.ime.service
 import android.inputmethodservice.InputMethodService
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.FrameLayout
 import androidx.compose.ui.platform.ComposeView
@@ -51,22 +52,22 @@ class LowVisionKeyboardService : InputMethodService() {
         viewModel = KeyboardViewModel(inputBridge, settingsUseCases)
 
         val metrics = resources.displayMetrics
-        val keyHeightDp = 56
-        val rowCount = 4
         val density = metrics.density
-        val keyboardHeight = (keyHeightDp * rowCount * density).toInt()
+        val keyboardHeightPx = (56 * 4 * density).toInt()
+
+        window?.window?.setLayout(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            keyboardHeightPx
+        )
 
         val composeView = ComposeView(this).apply {
             setContent { KeyboardScreen(viewModel) }
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
-                keyboardHeight
+                keyboardHeightPx
             )
         }
 
-        // Lifecycle workaround: inject a LifecycleOwner on the IME window's
-        // root view BEFORE ComposeView's onAttachedToWindow creates its
-        // WindowRecomposer (which requires a ViewTreeLifecycleOwner).
         val wrapper = object : FrameLayout(this) {
             override fun onAttachedToWindow() {
                 rootView.setViewTreeLifecycleOwner(lifecycleOwner)

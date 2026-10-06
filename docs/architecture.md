@@ -17,7 +17,7 @@ An Android keyboard (IME) designed for people with low vision, with:
   Android `InputMethodService` implementation that integrates with the system as a keyboard.
 
 - Keyboard UI Layer (Jetpack Compose)  
-  Renders the keyboard, handles pan with fixed 2× zoom, processes touch input.
+  Renders the keyboard, handles pan with dynamic zoom, processes touch input.
 
 - Keyboard Layout Engine  
   Defines key positions, labels, hitboxes, and recalculates layout under zoom/pan.
@@ -179,7 +179,8 @@ This structure ensures:
    - `offsetX` via drag and inertial fling
    - `offsetY` via drag and inertial fling
    - tap‑to‑cancel during fling
-3. Zoom is fixed at 2× for this transition phase (no pinch‑zoom).
+3. Zoom is user‑controlled via a slider in Settings (range 1×–3×, defaults to 1×). No pinch‑zoom.
+4. Zoom changes trigger `LaunchedEffect` in `PanContainer` to reclamp `currentOffset`.
 4. `KeyboardViewModel.updatePan()` updates `KeyboardState` offset values.
 5. `KeyboardScreen` recomposes with `graphicsLayer` scale/translation.
 6. `LayoutCalculator` recalculates key hitboxes based on zoom/pan.
@@ -188,12 +189,11 @@ This structure ensures:
 
 ## 4.3 Settings Flow
 
-1. User changes settings (zoom default, haptic toggle, etc.).
+1. User changes settings (zoom slider, haptic toggle, etc.).
 2. `SettingsUseCases` update `KeyboardSettings`.
 3. `DataStoreSettingsRepository` persists changes.
-4. `KeyboardViewModel` observes settings via:
-   - `Flow<KeyboardSettings>`
-5. `KeyboardState` updates reactively based on settings.
+4. `KeyboardViewModel` observes settings via `Flow<KeyboardSettings>` and applies reactively.
+5. Zoom slider also updates `KeyboardState` immediately for smooth tracking.
 
 # 5. IME Integration
 

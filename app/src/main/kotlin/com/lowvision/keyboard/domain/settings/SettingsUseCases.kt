@@ -21,4 +21,8 @@ class SettingsUseCases(
     fun setHighContrastEnabled(enabled: Boolean) {
         scope.launch { repository.setHighContrastEnabled(enabled) }
     }
+
+    fun setZoomLevel(level: Float) {
+        scope.launch { repository.setZoomLevel(level) }
+    }
 }
