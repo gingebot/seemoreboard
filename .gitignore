@@ -1,0 +1,25 @@
+# Gradle
+.gradle/
+
+# Android/Gradle build outputs
+**/build/
+
+# Local SDK configuration
+local.properties
+
+# IDE metadata
+.idea/
+*.iml
+
+# Local Cline/workflow files
+.cline.json
+IMPLEMENTATION_SUMMARY.md
+TEST_SESSION.md
+
+# APK/AAB outputs
+*.apk
+*.aab
+
+# OS files
+.DS_Store
+Thumbs.db
