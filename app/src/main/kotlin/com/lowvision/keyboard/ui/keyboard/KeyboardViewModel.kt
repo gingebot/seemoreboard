@@ -45,6 +45,19 @@ class KeyboardViewModel(
         }
     }
 
+    fun handleEmojiKey() {
+        _state.update { it.copy(emojiPickerVisible = true) }
+    }
+
+    fun closeEmojiPicker() {
+        _state.update { it.copy(emojiPickerVisible = false) }
+    }
+
+    fun commitEmoji(emoji: String) {
+        inputBridge.commitText(emoji)
+        closeEmojiPicker()
+    }
+
     fun onKeyPress(key: String) {
         if (key == "\b" || key == "⌫") {
             inputBridge.deleteCharacter()

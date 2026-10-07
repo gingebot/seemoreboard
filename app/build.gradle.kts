@@ -46,6 +46,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.savedstate:savedstate-ktx:1.2.1")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.emoji2:emoji2-bundled:1.6.0")
+    implementation("androidx.emoji2:emoji2-emojipicker:1.6.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     debugImplementation("androidx.compose.ui:ui-tooling")

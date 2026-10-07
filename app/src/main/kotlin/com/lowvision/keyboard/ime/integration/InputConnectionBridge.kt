@@ -28,6 +28,10 @@ class InputConnectionBridge {
         inputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
     }
 
+    fun commitText(text: String) {
+        inputConnection?.commitText(text, 1)
+    }
+
     fun sendKeyEvent(keyEvent: KeyEvent) {
         inputConnection?.sendKeyEvent(keyEvent)
     }

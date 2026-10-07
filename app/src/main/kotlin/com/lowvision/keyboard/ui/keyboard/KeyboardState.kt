@@ -16,5 +16,6 @@ data class KeyboardState(
     val shiftState: ShiftState = ShiftState.OFF,
     val activeLayer: KeyboardLayer = KeyboardLayer.ALPHA,
     val keyboardHeightDp: Int = 350,
-    val theme: KeyboardTheme = KeyboardTheme.BLACK_WHITE
+    val theme: KeyboardTheme = KeyboardTheme.BLACK_WHITE,
+    val emojiPickerVisible: Boolean = false
 )

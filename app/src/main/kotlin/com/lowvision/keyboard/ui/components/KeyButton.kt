@@ -36,6 +36,7 @@ fun KeyButton(
     theme: KeyboardTheme = KeyboardTheme.BLACK_WHITE,
     height: Dp = 56.dp,
     enabled: Boolean = true,
+    contentDescription: String = label,
     onClick: () -> Unit
 ) {
     val shape = RoundedCornerShape(8.dp)
@@ -64,7 +65,7 @@ fun KeyButton(
                 ) else Modifier
             )
             .padding(2.dp)
-            .semantics { contentDescription = label },
+            .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center
     ) {
         Text(

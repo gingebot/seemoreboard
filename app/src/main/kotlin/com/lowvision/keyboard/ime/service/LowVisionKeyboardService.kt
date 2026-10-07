@@ -54,7 +54,7 @@ class LowVisionKeyboardService : InputMethodService() {
             setContent { KeyboardScreen(viewModel) }
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
+                FrameLayout.LayoutParams.MATCH_PARENT
             )
         }
 
@@ -67,6 +67,10 @@ class LowVisionKeyboardService : InputMethodService() {
                 super.onAttachedToWindow()
             }
         }.apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
             addView(composeView)
         }
         return wrapper
