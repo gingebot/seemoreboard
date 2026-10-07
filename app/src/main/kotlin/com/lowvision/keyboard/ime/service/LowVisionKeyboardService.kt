@@ -50,30 +50,11 @@ class LowVisionKeyboardService : InputMethodService() {
     override fun onCreateInputView(): View {
         viewModel = KeyboardViewModel(applicationContext, inputBridge, settingsUseCases)
 
-        val density = resources.displayMetrics.density
-        val initialHeightPx = (350 * density).toInt()
-        window?.window?.setLayout(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            initialHeightPx
-        )
-
         val composeView = ComposeView(this).apply {
-            setContent {
-                KeyboardScreen(
-                    viewModel = viewModel,
-                    onHeightChanged = { heightPx ->
-                        if (heightPx > 0) {
-                            window?.window?.setLayout(
-                                WindowManager.LayoutParams.MATCH_PARENT,
-                                heightPx
-                            )
-                        }
-                    }
-                )
-            }
+            setContent { KeyboardScreen(viewModel) }
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
+                FrameLayout.LayoutParams.WRAP_CONTENT
             )
         }
 
@@ -104,4 +85,5 @@ class LowVisionKeyboardService : InputMethodService() {
     override fun onEvaluateInputViewShown(): Boolean {
         return true
     }
+
 }

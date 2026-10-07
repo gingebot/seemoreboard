@@ -26,7 +26,7 @@ An Android keyboard (IME) designed for people with low vision, with:
   Bridges UI events to `InputConnection`.
 
 - Settings Layer  
-  Stores preferences (zoom, pan sensitivity, haptics, audio, keyboard height, drag handle) via DataStore.
+  Stores preferences (zoom, pan sensitivity, haptics, audio, keyboard height) via DataStore.
   Settings UI is a full‑screen Activity launched from IME (⚙ key). Android system settings integration is declared via `android.view.im.settingsActivity` metadata but not honoured by Samsung devices (metadata reads as null system‑side for third‑party IMEs).
 
 - Accessibility Layer  
@@ -53,7 +53,6 @@ An Android keyboard (IME) designed for people with low vision, with:
 - `Modifier.pointerInput()`
 - `Modifier.draggable()`
 - `Modifier.onSizeChanged()`
-- `detectVerticalDragGestures` (drag handle resize)
 
 ### State & Async
 - Kotlin Coroutines
@@ -194,7 +193,7 @@ This structure ensures:
 
 1. User taps ⚙ key → IME launches `SettingsActivity` via `Intent.FLAG_ACTIVITY_NEW_TASK`.
 2. Android system settings may launch `SettingsActivity` via `android.view.im.settingsActivity` manifest meta‑data — works on stock Android; **not honoured on Samsung devices** (third‑party IME metadata is ignored).
-3. User changes settings (zoom slider, height slider, haptic toggle, high contrast toggle, drag handle toggle).
+3. User changes settings (zoom slider, height slider, haptic toggle, high contrast toggle).
 4. `SettingsUseCases` update `KeyboardSettings` persisted via `DataStoreSettingsRepository`.
 5. `KeyboardViewModel` observes settings via `Flow<KeyboardSettings>` and applies reactively to the IME.
 6. SettingsActivity uses its own `zoomValue` local state for smooth slider tracking, persisting via `SettingsUseCases`.
@@ -209,8 +208,8 @@ to the active text field.
 
 ### Responsibilities
 
-- Create and attach the Compose keyboard view at a configurable height (`keyboardHeightDp`).
-- Observe `KeyboardState.keyboardHeightDp` to dynamically resize the IME window in real time.
+- Create and attach the Compose keyboard view with a configurable root height (`keyboardHeightDp`).
+- Allow Android to measure the IME window and orientation/insets; the Compose root expresses the persisted keyboard height without forcing the window size.
 - Handle IME lifecycle events:
   - `onCreateInputView()`
   - `onStartInputView()`
@@ -222,6 +221,7 @@ to the active text field.
   - password fields
   - email fields
   - multiline fields
+- Delegate fullscreen/extract-mode decisions to Android's `InputMethodService` and the host editor configuration. In landscape or fullscreen contexts, Android may provide its system-managed extract editor and action controls.
 - Manage IME configuration via `ImeConfig`.
 
 ### Compose Integration
@@ -354,7 +354,7 @@ Compose modifiers used:
 - `Modifier.semantics { }`
 - `Modifier.clearAndSetSemantics { }`
 - `Modifier.onGloballyPositioned { }` (for hitbox calculations)
-- `Modifier.pointerInput { }` (for gestures including drag handle resize)
+- `Modifier.pointerInput { }` (for gestures)
 
 These ensure accessibility metadata is correctly attached to UI elements.
 
@@ -386,7 +386,6 @@ reactively.
 - `audioEnabled: Boolean` (later roadmap)  
 - `highContrastEnabled: Boolean`
 - `keyboardHeightDp: Int` — adjustable IME height (200–600dp, default 350dp)
-- `dragHandleEnabled: Boolean` — shows/hides the drag‑to‑resize handle at keyboard top
 
 ### Setting descriptions
 
@@ -395,8 +394,7 @@ reactively.
 - **hapticEnabled** – enables/disables haptic feedback on key press.  
 - **audioEnabled** – enables spoken feedback via TextToSpeech (later roadmap).  
 - **highContrastEnabled** – toggles high‑contrast color mode for low‑vision accessibility.
-- **keyboardHeightDp** – controls IME window height in density‑independent pixels; slider in Settings, also adjusted via drag handle.  
-- **dragHandleEnabled** – toggles a drag handle bar at the top of the keyboard for quick height adjustment.
+- **keyboardHeightDp** – controls IME window height in density‑independent pixels via a slider in Settings.
 
 ---
 
@@ -422,8 +420,7 @@ Responsibilities:
 - `setHapticEnabled(Boolean)`  
 - `setAudioEnabled(Boolean)` (later roadmap)  
 - `setHighContrastEnabled(Boolean)`  
-- `setKeyboardHeightDp(Int)` — clamps to 200–600 range
-- `setDragHandleEnabled(Boolean)`  
+- `setKeyboardHeightDp(Int)` — clamps to 200–600 range  
 
 These use cases ensure:
 
@@ -442,8 +439,7 @@ and updates `KeyboardState` automatically when:
 - pan sensitivity changes  
 - haptics toggle changes  
 - high‑contrast mode changes  
-- keyboard height changes (drag handle or slider)
-- drag handle toggle changes  
+- keyboard height changes (via slider)
 
 The keyboard UI always reflects the latest settings without manual refresh.
 
@@ -454,12 +450,11 @@ The keyboard UI always reflects the latest settings without manual refresh.
 Settings must be applied when:
 
 - the keyboard view is created (`onCreateInputView`) — initial height from default/persisted value
-- the input view starts (`onStartInputView`)  
-- the user changes settings mid‑session — IME window height resizes reactively via `collectLatest` on `KeyboardState`
-- the user drags the resize handle on the keyboard
+- the input view starts (`onStartInputView`) and Android measures the Compose root using the persisted height  
+- the user changes settings mid‑session — `KeyboardState.keyboardHeightDp` recomposes the Compose root without overriding Android's orientation/inset measurement
 
 Pan offset values must be applied immediately to avoid disorientation.
-Height changes update both the Compose container and the IME window layout simultaneously.
+Height changes recompose the Compose root; Android retains control of the surrounding IME window, orientation, insets, and extract-mode layout.
 
 ---
 
@@ -472,7 +467,7 @@ The settings architecture supports:
 - audio feedback profiles  
 - gesture sensitivity tuning  
 - accessibility presets  
-- adjustable IME height (drag handle + slider)
+- adjustable IME height (slider)
 - ergonomic resizing controls  
 
 # 8. AI Assistant Integration Rules

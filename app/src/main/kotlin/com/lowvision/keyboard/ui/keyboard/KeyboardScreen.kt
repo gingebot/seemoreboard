@@ -23,23 +23,12 @@ import androidx.compose.ui.unit.dp
 import com.lowvision.keyboard.domain.layout.LayoutCalculator
 import com.lowvision.keyboard.ui.components.KeyButton
 import com.lowvision.keyboard.ui.gestures.PanContainer
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.platform.LocalDensity
 
 @Composable
-fun KeyboardScreen(
-    viewModel: KeyboardViewModel,
-    onHeightChanged: (heightPx: Int) -> Unit = {}
-) {
+fun KeyboardScreen(viewModel: KeyboardViewModel) {
     val state by viewModel.state.collectAsState()
     val view = LocalView.current
     val density = LocalDensity.current
-
-    // Sync IME window height after every keyboardHeightDp change
-    LaunchedEffect(state.keyboardHeightDp) {
-        val heightPx = with(density) { state.keyboardHeightDp.dp.roundToPx() }
-        onHeightChanged(heightPx)
-    }
 
     Box(
         modifier = Modifier
@@ -78,7 +67,7 @@ private fun KeyboardLayout(
     onOpenSettings: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         val layout = LayoutCalculator.getLayout(state.activeLayer)
