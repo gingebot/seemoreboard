@@ -8,7 +8,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,6 +34,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.sp
 import com.lowvision.keyboard.data.settings.DataStoreSettingsRepository
 import com.lowvision.keyboard.domain.settings.KeyboardSettings
@@ -128,21 +133,49 @@ private fun SettingsScreen(useCases: SettingsUseCases, onClose: () -> Unit) {
 
         Spacer(Modifier.height(12.dp))
 
-        // ---- Preview Key ----
+        // ---- Unified Theme + Zoom Preview ----
+        Text(
+            text = "Active Theme: ${settings.theme.displayName}",
+            color = Color.White,
+            fontSize = 22.sp,
+            modifier = Modifier.semantics {
+                liveRegion = LiveRegionMode.Polite
+            }
+        )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(80.dp),
+                .height((72f * zoomValue).dp),
             contentAlignment = Alignment.Center
         ) {
-            KeyButton(
-                label = "k",
-                highContrast = settings.highContrastEnabled,
-                enabled = false,
-                modifier = Modifier.scale(zoomValue),
-                onClick = {}
-            )
+            Row(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .scale(zoomValue),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                listOf("Q", "W", "E", "R", "T").forEach { label ->
+                    KeyButton(
+                        label = label,
+                        theme = settings.theme,
+                        enabled = false,
+                        height = 56.dp,
+                        onClick = {}
+                    )
+                }
+            }
         }
+
+        Text(
+            text = "Change Theme",
+            color = Color.White,
+            fontSize = 22.sp,
+            modifier = Modifier
+                .clickable { useCases.setTheme(useCases.cycleTheme(settings.theme)) }
+                .background(Color(0xFF333333))
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+        )
 
         Spacer(Modifier.height(32.dp))
 
@@ -152,11 +185,6 @@ private fun SettingsScreen(useCases: SettingsUseCases, onClose: () -> Unit) {
             onToggle = { useCases.setHapticEnabled(!settings.hapticEnabled) }
         )
 
-        RowSetting(
-            label = "High Contrast",
-            checked = settings.highContrastEnabled,
-            onToggle = { useCases.setHighContrastEnabled(!settings.highContrastEnabled) }
-        )
 
         Spacer(Modifier.height(32.dp))
 

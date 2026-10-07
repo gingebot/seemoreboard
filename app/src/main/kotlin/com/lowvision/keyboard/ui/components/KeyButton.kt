@@ -27,12 +27,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lowvision.keyboard.ui.theme.KeyboardTheme
 
 @Composable
 fun KeyButton(
     label: String,
     modifier: Modifier = Modifier,
-    highContrast: Boolean = true,
+    theme: KeyboardTheme = KeyboardTheme.BLACK_WHITE,
     height: Dp = 56.dp,
     enabled: Boolean = true,
     onClick: () -> Unit
@@ -41,9 +42,9 @@ fun KeyButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    val bgColor = if (isPressed) Color.White else if (highContrast) Color.Black else Color(0xFF333333)
-    val textColor = if (isPressed) Color.Black else if (enabled) Color.White else Color.Gray
-    val borderColor = if (isPressed) Color.Black else Color.DarkGray
+    val bgColor = if (isPressed) theme.keyLabel else theme.keyBackground
+    val textColor = if (isPressed) theme.keyBackground else theme.keyLabel
+    val borderColor = if (isPressed) theme.keyBackground else theme.keyBorder
     val scale by animateFloatAsState(if (isPressed) 1.05f else 1f)
 
     Box(

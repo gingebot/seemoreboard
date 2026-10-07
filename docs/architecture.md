@@ -6,7 +6,7 @@ An Android keyboard (IME) designed for people with low vision, with:
 
 - Zoomable keys (scalable keyboard surface)
 - Pannable layout (dynamic panning across enlarged keyboard)
-- High‑contrast, large touch targets
+- High‑contrast themes applied to keys with large touch targets
 - Haptic feedback (MVP)
 - Audio feedback / spoken keys (later roadmap)
 - Predictive text / suggestions (later roadmap)
@@ -53,6 +53,7 @@ An Android keyboard (IME) designed for people with low vision, with:
 - `Modifier.pointerInput()`
 - `Modifier.draggable()`
 - `Modifier.onSizeChanged()`
+- Theme-aware `KeyButton` rendering for key background, label, and border colors
 
 ### State & Async
 - Kotlin Coroutines
@@ -336,14 +337,16 @@ Zooming must **increase** touch target size, not decrease it.
 
 ---
 
-## 6.5 High‑Contrast Mode
+## 6.5 Keyboard Themes
 
-High‑contrast mode should:
+Keyboard themes provide accessible key palettes while keeping the surrounding keyboard and IME surfaces stable:
 
-- Increase key border thickness
-- Increase color contrast between key background and label
-- Use accessible color palettes
-- Be toggleable via settings (`highContrastEnabled`)
+- Select accessible key background and label colors
+- Provide a visible key border for each palette
+- Apply only to key components through `KeyButton`
+- Use the selected `KeyboardTheme` palette
+
+The available themes are `BLACK_WHITE`, `WHITE_BLACK`, `YELLOW_BLACK`, and `BLUE_WHITE`.
 
 ---
 
@@ -371,7 +374,7 @@ The architecture supports:
 # 7. Settings & Preferences
 
 The keyboard allows users to customize zoom, panning behavior, haptics, audio feedback,
-and high‑contrast mode. All settings must persist across sessions and update the keyboard UI
+keyboard height, and key themes. All settings must persist across sessions and update the keyboard UI
 reactively.
 
 ---
@@ -384,8 +387,8 @@ reactively.
 - `panSensitivity: Float`  
 - `hapticEnabled: Boolean`  
 - `audioEnabled: Boolean` (later roadmap)  
-- `highContrastEnabled: Boolean`
 - `keyboardHeightDp: Int` — adjustable IME height (200–600dp, default 350dp)
+- `theme: KeyboardTheme` — persisted key color theme, default `BLACK_WHITE`
 
 ### Setting descriptions
 
@@ -393,8 +396,15 @@ reactively.
 - **panSensitivity** – controls how fast the keyboard moves when dragged.  
 - **hapticEnabled** – enables/disables haptic feedback on key press.  
 - **audioEnabled** – enables spoken feedback via TextToSpeech (later roadmap).  
-- **highContrastEnabled** – toggles high‑contrast color mode for low‑vision accessibility.
 - **keyboardHeightDp** – controls IME window height in density‑independent pixels via a slider in Settings.
+- **theme** – selects the key background, label, and border palette; it does not change the keyboard or IME backgrounds.
+
+Supported key themes:
+
+- `BLACK_WHITE` — black background, white label and border
+- `WHITE_BLACK` — white background, black label and border
+- `YELLOW_BLACK` — yellow background, black label and border
+- `BLUE_WHITE` — dark blue background, white label and border
 
 ---
 
@@ -407,7 +417,8 @@ Responsibilities:
 
 - Read settings from DataStore.  
 - Write updated settings to DataStore.  
-- Expose settings as a reactive `Flow<KeyboardSettings>`.  
+- Expose settings as a reactive `Flow<KeyboardSettings>`.
+- Persist `theme` as its enum name and safely fall back to `BLACK_WHITE` for unknown or missing values.  
 
 ---
 
@@ -419,8 +430,9 @@ Responsibilities:
 - `setPanSensitivity(Float)`  
 - `setHapticEnabled(Boolean)`  
 - `setAudioEnabled(Boolean)` (later roadmap)  
-- `setHighContrastEnabled(Boolean)`  
 - `setKeyboardHeightDp(Int)` — clamps to 200–600 range  
+- `cycleTheme(KeyboardTheme)`  
+- `setTheme(KeyboardTheme)`  
 
 These use cases ensure:
 
@@ -438,8 +450,8 @@ and updates `KeyboardState` automatically when:
 - zoom changes  
 - pan sensitivity changes  
 - haptics toggle changes  
-- high‑contrast mode changes  
-- keyboard height changes (via slider)
+- keyboard height changes (via slider)  
+- theme changes, which update key rendering and the unified Settings preview
 
 The keyboard UI always reflects the latest settings without manual refresh.
 
@@ -455,6 +467,8 @@ Settings must be applied when:
 
 Pan offset values must be applied immediately to avoid disorientation.
 Height changes recompose the Compose root; Android retains control of the surrounding IME window, orientation, insets, and extract-mode layout.
+Theme changes recompose key components only; keyboard and IME root backgrounds remain unchanged.
+`SettingsActivity` displays the active theme and a unified `Q W E R T` preview scaled with the current zoom.
 
 ---
 

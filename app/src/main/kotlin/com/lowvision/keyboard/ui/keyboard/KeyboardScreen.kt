@@ -115,7 +115,7 @@ private fun KeyboardLayout(
                         // Shift key gets state-based background color
                         val shiftMod = if (label == "Shift") {
                             val shiftBg = when (state.shiftState) {
-                                ShiftState.OFF -> if (state.highContrastEnabled) Color.Black else Color(0xFF333333)
+                                ShiftState.OFF -> state.theme.keyBackground
                                 ShiftState.ON -> Color(0xFF444444)
                                 ShiftState.LOCK -> Color(0xFF666666)
                             }
@@ -125,7 +125,7 @@ private fun KeyboardLayout(
                         }
                         KeyButton(
                             label = if (label == "Shift") "\u21E7" else label,
-                            highContrast = state.highContrastEnabled,
+                            theme = state.theme,
                             modifier = shiftMod,
                             enabled = label != "\uD83D\uDE42",
                             height = keyHeight,
@@ -140,7 +140,7 @@ private fun KeyboardLayout(
                         }
                         KeyButton(
                             label = label,
-                            highContrast = state.highContrastEnabled,
+                            theme = state.theme,
                             modifier = Modifier.weight(1f),
                             height = keyHeight,
                             onClick = { onKeyPress(entry) }

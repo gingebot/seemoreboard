@@ -1,5 +1,7 @@
 package com.lowvision.keyboard.ui.keyboard
 
+import com.lowvision.keyboard.ui.theme.KeyboardTheme
+
 enum class ShiftState { OFF, ON, LOCK }
 
 enum class KeyboardLayer { ALPHA, SYMBOLS }
@@ -11,8 +13,8 @@ data class KeyboardState(
     val offsetX: Float = 0f,
     val offsetY: Float = 0f,
     val hapticEnabled: Boolean = true,
-    val highContrastEnabled: Boolean = true,
     val shiftState: ShiftState = ShiftState.OFF,
     val activeLayer: KeyboardLayer = KeyboardLayer.ALPHA,
-    val keyboardHeightDp: Int = 350
+    val keyboardHeightDp: Int = 350,
+    val theme: KeyboardTheme = KeyboardTheme.BLACK_WHITE
 )

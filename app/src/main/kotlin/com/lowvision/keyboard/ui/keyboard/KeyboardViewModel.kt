@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.lowvision.keyboard.domain.settings.SettingsUseCases
 import com.lowvision.keyboard.ime.integration.InputConnectionBridge
 import com.lowvision.keyboard.ui.settings.SettingsActivity
+import com.lowvision.keyboard.ui.theme.KeyboardTheme
 import com.lowvision.keyboard.utils.Logging
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,8 +37,8 @@ class KeyboardViewModel(
                     it.copy(
                         zoomLevel = settings.zoomLevel,
                         hapticEnabled = settings.hapticEnabled,
-                        highContrastEnabled = settings.highContrastEnabled,
-                        keyboardHeightDp = settings.keyboardHeightDp
+                        keyboardHeightDp = settings.keyboardHeightDp,
+                        theme = settings.theme
                     )
                 }
             }
@@ -113,11 +114,6 @@ class KeyboardViewModel(
         settingsUseCases.setHapticEnabled(!current)
     }
 
-    fun toggleHighContrast() {
-        val current = _state.value.highContrastEnabled
-        settingsUseCases.setHighContrastEnabled(!current)
-    }
-
     fun setZoomLevel(level: Float) {
         _state.update { it.copy(zoomLevel = level.coerceIn(1f, 3f)) }
         settingsUseCases.setZoomLevel(level)
@@ -127,5 +123,16 @@ class KeyboardViewModel(
         val clamped = dp.coerceIn(200, 600)
         _state.update { it.copy(keyboardHeightDp = clamped) }
         settingsUseCases.setKeyboardHeightDp(clamped)
+    }
+
+    fun cycleTheme() {
+        val nextTheme = settingsUseCases.cycleTheme(_state.value.theme)
+        _state.update { it.copy(theme = nextTheme) }
+        settingsUseCases.setTheme(nextTheme)
+    }
+
+    fun setTheme(theme: KeyboardTheme) {
+        _state.update { it.copy(theme = theme) }
+        settingsUseCases.setTheme(theme)
     }
 }
