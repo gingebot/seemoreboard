@@ -232,6 +232,16 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
         }
         }
         selectedVariants?.let { variants ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0x99000000))
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { selectedVariants = null }
+                    .semantics { contentDescription = "Close emoji variant chooser" }
+            )
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -239,8 +249,32 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
                     .align(Alignment.Center)
                     .background(Color(0xFF1A1A1A))
                     .padding(16.dp)
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { }
             ) {
-                Text("Choose variant", color = Color.White, fontSize = 24.sp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Choose emoji variant",
+                        color = Color.White,
+                        fontSize = 24.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "Cancel",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        modifier = Modifier
+                            .background(Color(0xFF444444), RoundedCornerShape(8.dp))
+                            .clickable { selectedVariants = null }
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .semantics { contentDescription = "Cancel emoji variant chooser" }
+                    )
+                }
                 LazyVerticalGrid(columns = GridCells.Fixed(state.emojiSize.columns)) {
                     items(variants, key = { it }) { variant ->
                         AndroidView(
