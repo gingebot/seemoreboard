@@ -90,7 +90,7 @@ private fun KeyboardLayout(
         for (rowIdx in layout.indices) {
             val row = layout[rowIdx]
             val isBottomRow = rowIdx == layout.lastIndex
-            val keyHeight = if (isBottomRow) 60.dp else 48.dp
+            val keyHeight = 48.dp
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
