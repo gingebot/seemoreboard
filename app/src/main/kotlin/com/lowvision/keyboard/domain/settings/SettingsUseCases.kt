@@ -14,6 +14,11 @@ class SettingsUseCases(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     val settingsFlow: Flow<KeyboardSettings> = repository.settingsFlow
+    val recentEmojiFlow: Flow<List<String>> = repository.recentEmojiFlow
+
+    fun addRecentEmoji(emoji: String) {
+        scope.launch { repository.addRecentEmoji(emoji) }
+    }
 
     fun setHapticEnabled(enabled: Boolean) {
         scope.launch { repository.setHapticEnabled(enabled) }

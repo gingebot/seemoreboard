@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -22,6 +24,8 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +38,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.lowvision.keyboard.R
 import com.lowvision.keyboard.domain.layout.LayoutCalculator
 import com.lowvision.keyboard.ui.components.KeyButton
 import com.lowvision.keyboard.ui.gestures.PanContainer
@@ -87,8 +92,16 @@ fun KeyboardScreen(viewModel: KeyboardViewModel) {
 @Composable
 private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
     val context = LocalContext.current
+    val state by viewModel.state.collectAsState()
+    val categories = remember(context) { loadEmojiCategories(context) }
+    var selectedCategory by remember { mutableStateOf(0) }
+    var selectedVariants by remember { mutableStateOf<List<String>?>(null) }
+    val visibleCategories = listOf(
+        EmojiCategory("Recent", state.recentEmoji.map { EmojiEntry(it) })
+    ) + categories
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
         Text(
             text = "Back to keyboard",
             color = Color.White,
@@ -100,6 +113,30 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
                 .padding(horizontal = 20.dp, vertical = 16.dp)
                 .semantics { contentDescription = "Close emoji picker" }
         )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF222222))
+                .horizontalScroll(androidx.compose.foundation.rememberScrollState())
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            visibleCategories.forEachIndexed { index, category ->
+                Text(
+                    text = category.label,
+                    color = if (index == selectedCategory) Color.Black else Color.White,
+                    fontSize = 16.sp,
+                    modifier = Modifier
+                        .background(
+                            if (index == selectedCategory) Color.White else Color(0xFF444444),
+                            RoundedCornerShape(8.dp)
+                        )
+                        .clickable { selectedCategory = index }
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .semantics { contentDescription = "Emoji category ${category.label}" }
+                )
+            }
+        }
         LazyVerticalGrid(
             columns = GridCells.Fixed(4),
             modifier = Modifier
@@ -110,29 +147,99 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(LOW_VISION_EMOJI_SAMPLE, key = { it }) { emoji ->
+            items(visibleCategories[selectedCategory].emoji, key = { it.emoji }) { entry ->
                 AndroidView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(88.dp)
                         .background(Color(0xFF333333), RoundedCornerShape(8.dp))
-                        .clickable { viewModel.commitEmoji(emoji) }
-                        .semantics { contentDescription = "Emoji $emoji" },
+                        .semantics { contentDescription = "Emoji ${entry.emoji}" },
                     factory = {
                         android.widget.TextView(context).apply {
                             gravity = android.view.Gravity.CENTER
                             setTextColor(android.graphics.Color.WHITE)
                             setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 56f)
-                            isClickable = false
                             isFocusable = false
+                            isClickable = true
+                            isLongClickable = true
+                            setOnClickListener { viewModel.commitEmoji(entry.emoji) }
+                            setOnLongClickListener {
+                                if (entry.variants.isNotEmpty()) {
+                                    selectedVariants = listOf(entry.emoji) + entry.variants
+                                    true
+                                } else {
+                                    false
+                                }
+                            }
                         }
                     },
                     update = { cell ->
-                        cell.text = processEmojiForDisplay(emoji)
+                        cell.text = processEmojiForDisplay(entry.emoji)
                     }
                 )
             }
         }
+        }
+        selectedVariants?.let { variants ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp)
+                    .align(Alignment.Center)
+                    .background(Color(0xFF1A1A1A))
+                    .padding(16.dp)
+            ) {
+                Text("Choose variant", color = Color.White, fontSize = 24.sp)
+                LazyVerticalGrid(columns = GridCells.Fixed(4)) {
+                    items(variants, key = { it }) { variant ->
+                        AndroidView(
+                            modifier = Modifier
+                                .height(80.dp)
+                                .fillMaxWidth()
+                                .semantics { contentDescription = "Emoji variant $variant" }
+                            ,
+                            factory = {
+                                android.widget.TextView(context).apply {
+                                    gravity = android.view.Gravity.CENTER
+                                    setTextColor(android.graphics.Color.WHITE)
+                                    setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 48f)
+                                    isClickable = true
+                                    setOnClickListener {
+                                        selectedVariants = null
+                                        viewModel.commitEmoji(variant)
+                                    }
+                                }
+                            },
+                            update = { cell -> cell.text = processEmojiForDisplay(variant) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private data class EmojiCategory(
+    val label: String,
+    var emoji: List<EmojiEntry>
+)
+
+private fun loadEmojiCategories(context: android.content.Context): List<EmojiCategory> {
+    val definitions = listOf(
+        "Smileys" to R.raw.emoji_category_emotions,
+        "People" to R.raw.emoji_category_people,
+        "Animals" to R.raw.emoji_category_animals_nature,
+        "Food" to R.raw.emoji_category_food_drink,
+        "Travel" to R.raw.emoji_category_travel_places,
+        "Activities" to R.raw.emoji_category_activity,
+        "Objects" to R.raw.emoji_category_objects,
+        "Symbols" to R.raw.emoji_category_symbols,
+        "Flags" to R.raw.emoji_category_flags
+    )
+    return definitions.map { (label, resourceId) ->
+        EmojiCategory(label, context.resources.openRawResource(resourceId).bufferedReader().useLines { lines ->
+            parseEmojiCsv(lines).toList()
+        })
     }
 }
 
@@ -143,12 +250,6 @@ private fun processEmojiForDisplay(emoji: String): CharSequence {
         emoji
     }
 }
-
-private val LOW_VISION_EMOJI_SAMPLE = listOf(
-    "😀", "😂", "😍", "🥰",
-    "😎", "😭", "😡", "🤔",
-    "👍", "👎", "👏", "🙏"
-)
 
 @Composable
 private fun KeyboardLayout(

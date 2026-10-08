@@ -26,6 +26,7 @@ class DataStoreSettingsRepository(context: Context) {
     private val zoomLevelKey = floatPreferencesKey("zoom_level")
     private val keyboardHeightDpKey = intPreferencesKey("keyboard_height_dp")
     private val themeKey = stringPreferencesKey("keyboard_theme")
+    private val recentEmojiKey = stringPreferencesKey("recent_emoji")
 
     val settingsFlow: Flow<KeyboardSettings> = appContext.keyboardDataStore.data.map { prefs ->
         KeyboardSettings(
@@ -36,6 +37,28 @@ class DataStoreSettingsRepository(context: Context) {
                 runCatching { KeyboardTheme.valueOf(value) }.getOrDefault(KeyboardTheme.BLACK_WHITE)
             } ?: KeyboardTheme.BLACK_WHITE
         )
+    }
+
+    val recentEmojiFlow: Flow<List<String>> = appContext.keyboardDataStore.data.map { prefs ->
+        prefs[recentEmojiKey].orEmpty()
+            .split(RECENT_EMOJI_SEPARATOR)
+            .filter(String::isNotEmpty)
+    }
+
+    suspend fun addRecentEmoji(emoji: String) {
+        appContext.keyboardDataStore.edit { prefs ->
+            val recent = prefs[recentEmojiKey].orEmpty()
+                .split(RECENT_EMOJI_SEPARATOR)
+                .filter(String::isNotEmpty)
+                .let { listOf(emoji) + it.filterNot { value -> value == emoji } }
+                .take(MAX_RECENT_EMOJI)
+            prefs[recentEmojiKey] = recent.joinToString(RECENT_EMOJI_SEPARATOR)
+        }
+    }
+
+    private companion object {
+        const val MAX_RECENT_EMOJI = 30
+        const val RECENT_EMOJI_SEPARATOR = "\u0001"
     }
 
     suspend fun setHapticEnabled(enabled: Boolean) {

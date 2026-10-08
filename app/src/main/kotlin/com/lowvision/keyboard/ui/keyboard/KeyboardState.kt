@@ -17,5 +17,6 @@ data class KeyboardState(
     val activeLayer: KeyboardLayer = KeyboardLayer.ALPHA,
     val keyboardHeightDp: Int = 350,
     val theme: KeyboardTheme = KeyboardTheme.BLACK_WHITE,
-    val emojiPickerVisible: Boolean = false
+    val emojiPickerVisible: Boolean = false,
+    val recentEmoji: List<String> = emptyList()
 )

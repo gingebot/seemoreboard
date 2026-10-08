@@ -2,16 +2,16 @@
 
 ## 1. Overview
 
-Feature 013 connects the existing emoji key to Jetpack's official `EmojiPickerView`, embedded directly in the IME. This provides a complete emoji picker without maintaining emoji data or implementing a custom emoji grid.
+Feature 013 connects the existing emoji key to a custom, low-vision emoji picker embedded directly in the IME. It uses EmojiCompat for rendering, app-owned category data, recent emoji, and long-press variants.
 
-The Jetpack picker provides emoji categories, navigation, variants, recent emojis, EmojiCompat support, and accessibility behavior across supported Android devices.
+The custom picker provides emoji categories, navigation, variants, recent emojis, EmojiCompat support, and accessibility behavior while allowing low-vision sizing.
 
 ## 2. Goals
 
 - Connect the existing emoji key to an embedded emoji picker.
 - Insert selected emoji through the active `InputConnection`.
 - Keep the emoji key accessible through TalkBack and magnification.
-- Avoid maintaining custom emoji data, categories, variants, or recents.
+- Keep emoji data, categories, variants, and recents app-owned so the visual design remains configurable.
 - Preserve IME stability and existing keyboard height/zoom/pan behavior.
 
 ## 3. Behaviour Requirements
@@ -24,31 +24,31 @@ The existing 🙂 key remains in Row 4 and remains part of the normal zoomable/p
 
 When the emoji key is pressed:
 
-1. The IME switches its Compose content from the keyboard to an embedded `EmojiPickerView`.
+1. The IME switches its Compose content from the keyboard to the custom full-height emoji picker.
 2. The picker occupies the current IME root height; it is not affected by keyboard zoom or pan.
 3. The keyboard's zoom and pan state are retained while the picker is open.
 
 ### 3.3 Selecting an Emoji
 
-When the user selects an `EmojiViewItem`:
+When the user selects an emoji cell or variant:
 
-1. Read `EmojiViewItem.emoji`.
+1. Read the selected emoji string.
 2. Commit it to the active editor through `InputConnectionBridge.commitText(emoji, 1)`.
 3. Close the picker and restore the keyboard.
 
-### 3.4 No Custom Emoji Data
+### 3.4 App-Owned Emoji Data
 
-This feature does not implement or maintain a custom emoji grid, category data, search, skin-tone/variant data, or recent-emoji storage. These are supplied by `androidx.emoji2:emoji2-emojipicker:1.6.0`.
+The picker maintains app-owned category data and a custom emoji grid so glyph size and touch targets can meet low-vision requirements. EmojiCompat supplies bundled font rendering. Recent emoji are persisted in DataStore, and long-press variant selection is supported.
 
 ## 4. Architecture Changes
 
 ### 4.1 Dependency
 
 ```kotlin
-implementation("androidx.emoji2:emoji2-emojipicker:1.6.0")
+implementation("androidx.emoji2:emoji2-bundled:1.6.0")
 ```
 
-`EmojiPickerView` is an Android `FrameLayout` hosted in Compose with `AndroidView`.
+The custom picker is hosted in Compose and uses native `TextView` cells to preserve EmojiCompat spans and reliable glyph rendering.
 
 ### 4.2 KeyboardState
 
@@ -70,8 +70,9 @@ The previous `KEYCODE_SYM` system-picker attempt is not used because Android exp
 
 ### 4.6 KeyboardScreen
 
-- Render `EmojiPickerView` with `AndroidView` when `emojiPickerVisible` is true.
-- Configure `setOnEmojiPickedListener`.
+- Render the custom full-height emoji grid when `emojiPickerVisible` is true.
+- Render category navigation and recent emoji.
+- Support long-press variant selection.
 - Commit selection and close the picker.
 - Keep the picker inside the existing IME root container.
 - Do not apply keyboard zoom/pan transforms to the picker.
@@ -82,7 +83,7 @@ Keep the emoji key in the existing `KeyButton` layout, set its content descripti
 
 ### 4.8 architecture.md
 
-Document embedded Jetpack picker integration, `EmojiPickerView`/`AndroidView` hosting, `InputConnectionBridge.commitText()` insertion, accessibility semantics, and the absence of custom emoji data/UI.
+Document the custom category picker, EmojiCompat/native `TextView` rendering, recent emoji persistence, variant selection, `InputConnectionBridge.commitText()` insertion, and accessibility semantics.
 
 ## 5. Acceptance Criteria
 

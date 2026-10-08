@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class KeyboardViewModel(
@@ -43,6 +44,11 @@ class KeyboardViewModel(
                 }
             }
         }
+        viewModelScope.launch {
+            settingsUseCases.recentEmojiFlow.collect { recent ->
+                _state.update { it.copy(recentEmoji = recent) }
+            }
+        }
     }
 
     fun handleEmojiKey() {
@@ -55,7 +61,13 @@ class KeyboardViewModel(
 
     fun commitEmoji(emoji: String) {
         inputBridge.commitText(emoji)
-        closeEmojiPicker()
+        settingsUseCases.addRecentEmoji(emoji)
+        viewModelScope.launch {
+            delay(150L)
+            closeEmojiPicker()
+            delay(50L)
+            inputBridge.refreshCursor()
+        }
     }
 
     fun onKeyPress(key: String) {

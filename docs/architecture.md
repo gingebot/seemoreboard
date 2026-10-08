@@ -46,7 +46,7 @@ An Android keyboard (IME) designed for people with low vision, with:
 - `InputMethodService`
 - `EditorInfo`
 - `InputConnection`
-- Jetpack `EmojiPickerView` for embedded emoji selection
+- Custom Compose emoji picker with EmojiCompat-rendered native emoji cells
 
 ### Compose UI
 - `Modifier.scale()`
@@ -212,7 +212,7 @@ to the active text field.
 ### Responsibilities
 
 - Create and attach the Compose keyboard view with a configurable root height (`keyboardHeightDp`).
-- Keep the emoji key inside the existing zoomable/pannable keyboard and switch to the embedded Jetpack `EmojiPickerView` on press.
+- Keep the emoji key inside the existing zoomable/pannable keyboard and switch to the custom full-height emoji picker on press.
 - Allow Android to measure the IME window and orientation/insets; the Compose root expresses the persisted keyboard height without forcing the window size.
 - Handle IME lifecycle events:
   - `onCreateInputView()`
@@ -473,7 +473,7 @@ Pan offset values must be applied immediately to avoid disorientation.
 Height changes recompose the Compose root; Android retains control of the surrounding IME window, orientation, insets, and extract-mode layout.
 Theme changes recompose key components only; keyboard and IME root backgrounds remain unchanged.
 `SettingsActivity` displays the active theme and a unified `Q W E R T` preview scaled with the current zoom.
-The emoji key switches the IME to an embedded Jetpack `EmojiPickerView`. Selected `EmojiViewItem.emoji` values are committed through `InputConnectionBridge.commitText()`, and no custom emoji data or grid is maintained by the project.
+The emoji key switches the IME to a custom full-height emoji picker. Category CSV resources provide the emoji data, EmojiCompat renders each glyph using the bundled font, recent emoji are persisted in DataStore, and long-press variant selection is supported. Selected emoji values are committed through `InputConnectionBridge.commitText()`.
 
 ---
 

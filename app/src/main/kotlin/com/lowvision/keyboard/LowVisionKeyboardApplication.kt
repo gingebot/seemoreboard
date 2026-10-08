@@ -12,6 +12,5 @@ class LowVisionKeyboardApplication : Application() {
             BundledEmojiCompatConfig(this)
                 .setReplaceAll(true)
         )
-        EmojiCompat.get().load()
     }
 }
