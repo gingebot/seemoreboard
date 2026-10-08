@@ -97,6 +97,9 @@ private fun KeyboardLayout(
                     .padding(horizontal = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                if (row.firstOrNull()?.isNotEmpty() == true && row.lastOrNull()?.isEmpty() == true) {
+                    Box(modifier = Modifier.weight(0.5f))
+                }
                 for (colIdx in row.indices) {
                     val entry = row[colIdx]
                     if (entry.isEmpty()) {

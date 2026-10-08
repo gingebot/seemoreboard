@@ -64,6 +64,9 @@ private fun PreviewLayer(
                     .padding(horizontal = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                if (row.firstOrNull()?.isNotEmpty() == true && row.lastOrNull()?.isEmpty() == true) {
+                    Box(modifier = Modifier.weight(0.5f))
+                }
                 row.forEachIndexed { columnIndex, entry ->
                     if (entry.isEmpty()) {
                         val weight = if (!bottomRow && (columnIndex == 0 || columnIndex == row.lastIndex)) 0.5f else 1f
