@@ -138,7 +138,7 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
             }
         }
         LazyVerticalGrid(
-            columns = GridCells.Fixed(4),
+            columns = GridCells.Fixed(state.emojiSize.columns),
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
@@ -151,14 +151,17 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
                 AndroidView(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(88.dp)
+                        .height(state.emojiSize.cellHeightDp.dp)
                         .background(Color(0xFF333333), RoundedCornerShape(8.dp))
                         .semantics { contentDescription = "Emoji ${entry.emoji}" },
                     factory = {
                         android.widget.TextView(context).apply {
                             gravity = android.view.Gravity.CENTER
                             setTextColor(android.graphics.Color.WHITE)
-                            setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 56f)
+                            setTextSize(
+                                android.util.TypedValue.COMPLEX_UNIT_SP,
+                                state.emojiSize.textSizeSp
+                            )
                             isFocusable = false
                             isClickable = true
                             isLongClickable = true
@@ -178,6 +181,10 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
                         }
                     },
                     update = { cell ->
+                        cell.setTextSize(
+                            android.util.TypedValue.COMPLEX_UNIT_SP,
+                            state.emojiSize.textSizeSp
+                        )
                         cell.text = processEmojiForDisplay(entry.emoji)
                     }
                 )
@@ -194,11 +201,11 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
                     .padding(16.dp)
             ) {
                 Text("Choose variant", color = Color.White, fontSize = 24.sp)
-                LazyVerticalGrid(columns = GridCells.Fixed(4)) {
+                LazyVerticalGrid(columns = GridCells.Fixed(state.emojiSize.columns)) {
                     items(variants, key = { it }) { variant ->
                         AndroidView(
                             modifier = Modifier
-                                .height(80.dp)
+                                .height(state.emojiSize.cellHeightDp.dp)
                                 .fillMaxWidth()
                                 .semantics { contentDescription = "Emoji variant $variant" }
                             ,
@@ -206,7 +213,10 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
                                 android.widget.TextView(context).apply {
                                     gravity = android.view.Gravity.CENTER
                                     setTextColor(android.graphics.Color.WHITE)
-                                    setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 48f)
+                                    setTextSize(
+                                        android.util.TypedValue.COMPLEX_UNIT_SP,
+                                        state.emojiSize.textSizeSp
+                                    )
                                     isClickable = true
                                     configureEmojiCellInteraction(
                                         view = this,
@@ -219,7 +229,13 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
                                     )
                                 }
                             },
-                            update = { cell -> cell.text = processEmojiForDisplay(variant) }
+                            update = { cell ->
+                                cell.setTextSize(
+                                    android.util.TypedValue.COMPLEX_UNIT_SP,
+                                    state.emojiSize.textSizeSp
+                                )
+                                cell.text = processEmojiForDisplay(variant)
+                            }
                         )
                     }
                 }

@@ -39,7 +39,8 @@ class KeyboardViewModel(
                         zoomLevel = settings.zoomLevel,
                         hapticEnabled = settings.hapticEnabled,
                         keyboardHeightDp = settings.keyboardHeightDp,
-                        theme = settings.theme
+                        theme = settings.theme,
+                        emojiSize = settings.emojiSize
                     )
                 }
             }

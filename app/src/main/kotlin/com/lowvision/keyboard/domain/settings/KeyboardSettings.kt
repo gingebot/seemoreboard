@@ -8,5 +8,6 @@ data class KeyboardSettings(
     val hapticEnabled: Boolean = true,
     val audioEnabled: Boolean = false,
     val keyboardHeightDp: Int = 350,
-    val theme: KeyboardTheme = KeyboardTheme.BLACK_WHITE
+    val theme: KeyboardTheme = KeyboardTheme.BLACK_WHITE,
+    val emojiSize: EmojiSize = EmojiSize.LARGE
 )

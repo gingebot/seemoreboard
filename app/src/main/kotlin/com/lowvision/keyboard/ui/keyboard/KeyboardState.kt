@@ -1,6 +1,7 @@
 package com.lowvision.keyboard.ui.keyboard
 
 import com.lowvision.keyboard.ui.theme.KeyboardTheme
+import com.lowvision.keyboard.domain.settings.EmojiSize
 
 enum class ShiftState { OFF, ON, LOCK }
 
@@ -18,5 +19,6 @@ data class KeyboardState(
     val keyboardHeightDp: Int = 350,
     val theme: KeyboardTheme = KeyboardTheme.BLACK_WHITE,
     val emojiPickerVisible: Boolean = false,
-    val recentEmoji: List<String> = emptyList()
+    val recentEmoji: List<String> = emptyList(),
+    val emojiSize: EmojiSize = EmojiSize.LARGE
 )

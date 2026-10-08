@@ -40,4 +40,8 @@ class SettingsUseCases(
     fun setTheme(theme: KeyboardTheme) {
         scope.launch { repository.setTheme(theme) }
     }
+
+    fun setEmojiSize(size: EmojiSize) {
+        scope.launch { repository.setEmojiSize(size) }
+    }
 }

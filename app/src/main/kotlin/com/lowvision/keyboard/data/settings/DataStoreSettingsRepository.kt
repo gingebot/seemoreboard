@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.lowvision.keyboard.domain.settings.KeyboardSettings
+import com.lowvision.keyboard.domain.settings.EmojiSize
 import com.lowvision.keyboard.ui.theme.KeyboardTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -27,6 +28,7 @@ class DataStoreSettingsRepository(context: Context) {
     private val keyboardHeightDpKey = intPreferencesKey("keyboard_height_dp")
     private val themeKey = stringPreferencesKey("keyboard_theme")
     private val recentEmojiKey = stringPreferencesKey("recent_emoji")
+    private val emojiSizeKey = stringPreferencesKey("emoji_size")
 
     val settingsFlow: Flow<KeyboardSettings> = appContext.keyboardDataStore.data.map { prefs ->
         KeyboardSettings(
@@ -35,7 +37,10 @@ class DataStoreSettingsRepository(context: Context) {
             keyboardHeightDp = prefs[keyboardHeightDpKey] ?: 350,
             theme = prefs[themeKey]?.let { value ->
                 runCatching { KeyboardTheme.valueOf(value) }.getOrDefault(KeyboardTheme.BLACK_WHITE)
-            } ?: KeyboardTheme.BLACK_WHITE
+            } ?: KeyboardTheme.BLACK_WHITE,
+            emojiSize = prefs[emojiSizeKey]?.let { value ->
+                runCatching { EmojiSize.valueOf(value) }.getOrDefault(EmojiSize.LARGE)
+            } ?: EmojiSize.LARGE
         )
     }
 
@@ -82,6 +87,12 @@ class DataStoreSettingsRepository(context: Context) {
     suspend fun setTheme(theme: KeyboardTheme) {
         appContext.keyboardDataStore.edit { prefs ->
             prefs[themeKey] = theme.name
+        }
+    }
+
+    suspend fun setEmojiSize(size: EmojiSize) {
+        appContext.keyboardDataStore.edit { prefs ->
+            prefs[emojiSizeKey] = size.name
         }
     }
 }

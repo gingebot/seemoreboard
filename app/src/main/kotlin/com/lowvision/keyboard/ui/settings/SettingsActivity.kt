@@ -35,11 +35,13 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.sp
 import com.lowvision.keyboard.data.settings.DataStoreSettingsRepository
 import com.lowvision.keyboard.domain.settings.KeyboardSettings
+import com.lowvision.keyboard.domain.settings.EmojiSize
 import com.lowvision.keyboard.domain.settings.SettingsUseCases
 import com.lowvision.keyboard.ui.components.KeyButton
 import kotlin.math.roundToInt
@@ -185,6 +187,30 @@ private fun SettingsScreen(useCases: SettingsUseCases, onClose: () -> Unit) {
             onToggle = { useCases.setHapticEnabled(!settings.hapticEnabled) }
         )
 
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            text = "Emoji Size: ${settings.emojiSize.displayName}",
+            color = Color.White,
+            fontSize = 22.sp
+        )
+        EmojiSize.entries.forEach { size ->
+            Text(
+                text = size.displayName,
+                color = if (settings.emojiSize == size) Color.Black else Color.White,
+                fontSize = 20.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        if (settings.emojiSize == size) Color.White else Color(0xFF333333)
+                    )
+                    .clickable { useCases.setEmojiSize(size) }
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .semantics {
+                        contentDescription = "Emoji size ${size.displayName}"
+                    }
+            )
+        }
 
         Spacer(Modifier.height(32.dp))
 
