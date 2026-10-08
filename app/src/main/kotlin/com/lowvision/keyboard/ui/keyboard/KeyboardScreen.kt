@@ -5,7 +5,11 @@ import androidx.emoji2.text.EmojiCompat
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,10 +19,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -29,12 +36,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -92,13 +101,19 @@ fun KeyboardScreen(viewModel: KeyboardViewModel) {
 @Composable
 private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
     val context = LocalContext.current
+    val view = LocalView.current
     val state by viewModel.state.collectAsState()
     val categories = remember(context) { loadEmojiCategories(context) }
     var selectedCategory by remember { mutableStateOf(0) }
     var selectedVariants by remember { mutableStateOf<List<String>?>(null) }
+    val categoryScrollState = rememberLazyListState()
     val visibleCategories = listOf(
-        EmojiCategory("Recent", state.recentEmoji.map { EmojiEntry(it) })
+        EmojiCategory("Recent", "🕘", state.recentEmoji.map { EmojiEntry(it) })
     ) + categories
+
+    LaunchedEffect(selectedCategory) {
+        categoryScrollState.animateScrollToItem(selectedCategory)
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -113,31 +128,56 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
                 .padding(horizontal = 20.dp, vertical = 16.dp)
                 .semantics { contentDescription = "Close emoji picker" }
         )
-        Row(
+        LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFF222222))
-                .horizontalScroll(androidx.compose.foundation.rememberScrollState())
                 .padding(8.dp),
+            state = categoryScrollState,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            visibleCategories.forEachIndexed { index, category ->
+            itemsIndexed(visibleCategories, key = { index, category -> category.label }) { index, category ->
+                val interactionSource = remember { MutableInteractionSource() }
+                val isPressed by interactionSource.collectIsPressedAsState()
+                val scale by animateFloatAsState(if (isPressed) 1.06f else 1f)
                 Text(
-                    text = category.label,
+                    text = category.icon,
                     color = if (index == selectedCategory) Color.Black else Color.White,
-                    fontSize = 16.sp,
+                    fontSize = state.emojiSize.textSizeSp.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     modifier = Modifier
+                        .scale(scale)
+                        .size(state.emojiSize.cellHeightDp.dp)
                         .background(
                             if (index == selectedCategory) Color.White else Color(0xFF444444),
                             RoundedCornerShape(8.dp)
                         )
-                        .clickable { selectedCategory = index }
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            if (state.hapticEnabled) {
+                                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                            }
+                            selectedCategory = index
+                        }
+                        .padding(4.dp)
                         .semantics { contentDescription = "Emoji category ${category.label}" }
                 )
             }
         }
-        LazyVerticalGrid(
+        if (visibleCategories[selectedCategory].emoji.isEmpty()) {
+            Text(
+                text = "No recent emoji yet",
+                color = Color.White,
+                fontSize = 24.sp,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(32.dp)
+                    .semantics { contentDescription = "No recent emoji yet" }
+            )
+        } else LazyVerticalGrid(
             columns = GridCells.Fixed(state.emojiSize.columns),
             modifier = Modifier
                 .weight(1f)
@@ -290,6 +330,7 @@ private fun configureEmojiCellInteraction(
 
 private data class EmojiCategory(
     val label: String,
+    val icon: String,
     var emoji: List<EmojiEntry>
 )
 
@@ -306,10 +347,23 @@ private fun loadEmojiCategories(context: android.content.Context): List<EmojiCat
         "Flags" to R.raw.emoji_category_flags
     )
     return definitions.map { (label, resourceId) ->
-        EmojiCategory(label, context.resources.openRawResource(resourceId).bufferedReader().useLines { lines ->
+        EmojiCategory(label, iconForCategory(label), context.resources.openRawResource(resourceId).bufferedReader().useLines { lines ->
             parseEmojiCsv(lines).toList()
         })
     }
+}
+
+private fun iconForCategory(label: String): String = when (label) {
+    "Smileys" -> "😀"
+    "People" -> "🙋"
+    "Animals" -> "🐶"
+    "Food" -> "🍎"
+    "Travel" -> "🚗"
+    "Activities" -> "🎉"
+    "Objects" -> "💡"
+    "Symbols" -> "❤️"
+    "Flags" -> "🏳️"
+    else -> "🙂"
 }
 
 private fun processEmojiForDisplay(emoji: String): CharSequence {
