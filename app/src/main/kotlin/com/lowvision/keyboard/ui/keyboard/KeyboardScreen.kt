@@ -162,15 +162,19 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
                             isFocusable = false
                             isClickable = true
                             isLongClickable = true
-                            setOnClickListener { viewModel.commitEmoji(entry.emoji) }
-                            setOnLongClickListener {
+                            configureEmojiCellInteraction(
+                                view = this,
+                                hapticEnabled = state.hapticEnabled,
+                                onClick = { viewModel.commitEmoji(entry.emoji) },
+                                onLongClick = {
                                 if (entry.variants.isNotEmpty()) {
                                     selectedVariants = listOf(entry.emoji) + entry.variants
                                     true
                                 } else {
                                     false
                                 }
-                            }
+                                }
+                            )
                         }
                     },
                     update = { cell ->
@@ -204,10 +208,15 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
                                     setTextColor(android.graphics.Color.WHITE)
                                     setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 48f)
                                     isClickable = true
-                                    setOnClickListener {
-                                        selectedVariants = null
-                                        viewModel.commitEmoji(variant)
-                                    }
+                                    configureEmojiCellInteraction(
+                                        view = this,
+                                        hapticEnabled = state.hapticEnabled,
+                                        onClick = {
+                                            selectedVariants = null
+                                            viewModel.commitEmoji(variant)
+                                        },
+                                        onLongClick = { false }
+                                    )
                                 }
                             },
                             update = { cell -> cell.text = processEmojiForDisplay(variant) }
@@ -216,6 +225,50 @@ private fun EmojiPickerContent(viewModel: KeyboardViewModel) {
                 }
             }
         }
+    }
+}
+
+private fun configureEmojiCellInteraction(
+    view: android.widget.TextView,
+    hapticEnabled: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Boolean
+) {
+    val normalBackground = android.graphics.drawable.GradientDrawable().apply {
+        setColor(android.graphics.Color.TRANSPARENT)
+        cornerRadius = 8f
+    }
+    val pressedBackground = android.graphics.drawable.GradientDrawable().apply {
+        setColor(android.graphics.Color.rgb(102, 102, 102))
+        cornerRadius = 8f
+    }
+    view.background = normalBackground
+    view.setOnClickListener { onClick() }
+    view.setOnLongClickListener { onLongClick() }
+    view.setOnTouchListener { touchedView, event ->
+        when (event.actionMasked) {
+            android.view.MotionEvent.ACTION_DOWN -> {
+                touchedView.background = pressedBackground
+                if (hapticEnabled) {
+                    touchedView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                }
+                touchedView.animate()
+                    .scaleX(1.08f)
+                    .scaleY(1.08f)
+                    .setDuration(70L)
+                    .start()
+            }
+            android.view.MotionEvent.ACTION_UP,
+            android.view.MotionEvent.ACTION_CANCEL -> {
+                touchedView.background = normalBackground
+                touchedView.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(90L)
+                    .start()
+            }
+        }
+        false
     }
 }
 
