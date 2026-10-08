@@ -57,9 +57,7 @@ fun EmojiPickerContent(viewModel: KeyboardViewModel) {
     var selectedCategory by remember { mutableStateOf(0) }
     var selectedVariants by remember { mutableStateOf<List<String>?>(null) }
     val categoryScrollState = rememberLazyListState()
-    val visibleCategories = listOf(
-        EmojiCategory("Recent", "🕘", state.recentEmoji.map { EmojiEntry(it) })
-    ) + categories
+    val visibleCategories = buildVisibleEmojiCategories(state.recentEmoji, categories)
 
     LaunchedEffect(selectedCategory) {
         categoryScrollState.animateScrollToItem(selectedCategory)
@@ -161,7 +159,7 @@ fun EmojiPickerContent(viewModel: KeyboardViewModel) {
                                 onClick = { viewModel.commitEmoji(entry.emoji) },
                                 onLongClick = {
                                 if (entry.variants.isNotEmpty()) {
-                                    selectedVariants = listOf(entry.emoji) + entry.variants
+                                    selectedVariants = variantOptions(entry)
                                     true
                                 } else {
                                     false
@@ -311,12 +309,6 @@ private fun configureEmojiCellInteraction(
         false
     }
 }
-
-private data class EmojiCategory(
-    val label: String,
-    val icon: String,
-    var emoji: List<EmojiEntry>
-)
 
 private fun loadEmojiCategories(context: android.content.Context): List<EmojiCategory> {
     val definitions = listOf(

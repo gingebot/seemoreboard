@@ -49,4 +49,30 @@ class EmojiDataTest {
         assertEquals(3, EmojiSize.EXTRA_LARGE.columns)
         assertEquals(64f, EmojiSize.EXTRA_LARGE.textSizeSp)
     }
+
+    @Test
+    fun visibleCategoriesPutRecentFirstAndSupportEmptyRecent() {
+        val categories = buildVisibleEmojiCategories(
+            recent = emptyList(),
+            categories = listOf(EmojiCategory("Smileys", "😀", listOf(EmojiEntry("😀"))))
+        )
+
+        assertEquals(listOf("Recent", "Smileys"), categories.map { it.label })
+        assertEquals("🕘", categories.first().icon)
+        assertEquals(emptyList<EmojiEntry>(), categories.first().emoji)
+    }
+
+    @Test
+    fun selectedCategoryIsClampedToAvailableItems() {
+        assertEquals(0, selectedEmojiCategoryIndex(-1, 3))
+        assertEquals(2, selectedEmojiCategoryIndex(9, 3))
+        assertEquals(0, selectedEmojiCategoryIndex(4, 0))
+    }
+
+    @Test
+    fun variantOptionsIncludeBaseBeforeVariants() {
+        val entry = EmojiEntry("🙋", listOf("🙋‍♀️", "🙋‍♂️"))
+
+        assertEquals(listOf("🙋", "🙋‍♀️", "🙋‍♂️"), variantOptions(entry))
+    }
 }
