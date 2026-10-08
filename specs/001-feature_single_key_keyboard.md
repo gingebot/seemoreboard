@@ -117,7 +117,7 @@ When the user taps the key:
 - The key meets minimum touch target requirements (48dp).
 
 ### 7.3 IME Lifecycle
-- The keyboard loads via `LowVisionKeyboardService`.
+- The keyboard loads via `SeeMoreBoardService`.
 - The keyboard appears in all text fields.
 - No crashes occur during IME lifecycle events.
 
@@ -137,8 +137,8 @@ On the Samsung device:
 1. Open **Settings**
 2. Go to **General Management**
 3. Tap **Keyboard List and Default**
-4. Enable **Low Vision Keyboard**
-5. Set **Low Vision Keyboard** as the default input method
+4. Enable **SeeMoreBoard**
+5. Set **SeeMoreBoard** as the default input method
 
 ---
 
@@ -155,7 +155,7 @@ On the Samsung device:
 - Haptic feedback fires.
 - Logcat shows the event:
 
-[LowVisionKeyboard] Key pressed: A
+[SeeMoreBoard] Key pressed: A
 
 
 ---

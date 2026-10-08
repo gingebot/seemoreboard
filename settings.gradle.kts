@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "LowVisionKeyboard"
+rootProject.name = "SeeMoreBoard"
 include(":app")

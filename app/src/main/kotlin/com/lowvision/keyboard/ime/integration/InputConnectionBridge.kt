@@ -32,6 +32,10 @@ class InputConnectionBridge {
         inputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
     }
 
+    fun performEditorAction(actionId: Int) {
+        inputConnection?.performEditorAction(actionId)
+    }
+
     fun commitText(text: String) {
         inputConnection?.let { connection ->
             connection.commitText(text, 1)

@@ -3,6 +3,7 @@ package com.lowvision.keyboard.ui.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +23,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +41,7 @@ fun KeyButton(
     height: Dp = 56.dp,
     enabled: Boolean = true,
     contentDescription: String = label,
+    showSearchIcon: Boolean = false,
     onClick: () -> Unit
 ) {
     val shape = RoundedCornerShape(8.dp)
@@ -68,11 +73,41 @@ fun KeyButton(
             .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = label,
-            color = textColor,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
-        )
+        if (showSearchIcon) {
+            Canvas(modifier = Modifier.size(28.dp)) {
+                val strokeWidth = 3.dp.toPx()
+                val radius = size.minDimension * 0.28f
+                val center = androidx.compose.ui.geometry.Offset(
+                    x = size.width * 0.42f,
+                    y = size.height * 0.42f
+                )
+                drawCircle(
+                    color = textColor,
+                    radius = radius,
+                    center = center,
+                    style = Stroke(strokeWidth)
+                )
+                drawLine(
+                    color = textColor,
+                    start = androidx.compose.ui.geometry.Offset(
+                        center.x + radius * 0.7f,
+                        center.y + radius * 0.7f
+                    ),
+                    end = androidx.compose.ui.geometry.Offset(
+                        size.width * 0.8f,
+                        size.height * 0.8f
+                    ),
+                    strokeWidth = strokeWidth,
+                    cap = StrokeCap.Round
+                )
+            }
+        } else {
+            Text(
+                text = label,
+                color = textColor,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }

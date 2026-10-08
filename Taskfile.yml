@@ -1,0 +1,64 @@
+version: '3'
+
+vars:
+  APK: app/build/outputs/apk/debug/app-debug.apk
+  DEVICE: '{{.ADB_DEVICE | default ""}}'
+
+tasks:
+  default:
+    desc: Run the standard local validation
+    deps: [check]
+
+  build:
+    desc: Assemble the debug APK
+    cmds:
+      - ./gradlew assembleDebug --no-daemon
+
+  test:
+    desc: Run JVM unit tests
+    cmds:
+      - ./gradlew testDebugUnitTest --no-daemon
+
+  lint:
+    desc: Run Android lint for the default variant
+    cmds:
+      - ./gradlew lint --no-daemon
+
+  check:
+    desc: Run unit tests, lint, debug build, and whitespace checks
+    cmds:
+      - task: test
+      - task: lint
+      - task: build
+      - git diff --check
+
+  connected-test:
+    desc: Run instrumentation tests on a connected Android device
+    cmds:
+      - ./gradlew connectedDebugAndroidTest --no-daemon
+
+  install:
+    desc: Install the current debug APK on a connected device
+    deps: [build]
+    cmds:
+      - adb {{.DEVICE}} install -r {{.APK}}
+
+  deploy:
+    desc: Build and install the debug APK
+    cmds:
+      - task: install
+
+  logcat:
+    desc: Stream SeeMoreBoard logs from the connected device
+    cmds:
+      - adb {{.DEVICE}} logcat -s SeeMoreBoard
+
+  clean:
+    desc: Remove generated build outputs
+    cmds:
+      - ./gradlew clean --no-daemon
+
+  release:
+    desc: Assemble the release APK
+    cmds:
+      - ./gradlew assembleRelease --no-daemon

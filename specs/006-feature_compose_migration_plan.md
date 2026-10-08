@@ -166,7 +166,7 @@ Compose gesture handlers.
 
 ### 6.2 Updated Files
 
-**`ime/service/LowVisionKeyboardService.kt`**
+**`ime/service/SeeMoreBoardService.kt`**
 - Replace View-based root with ComposeView.
 
 **`domain/layout/LayoutCalculator.kt`**
@@ -228,8 +228,8 @@ On the Samsung device:
 1. Open **Settings**
 2. Go to **General Management**
 3. Tap **Keyboard List and Default**
-4. Enable **Low Vision Keyboard**
-5. Set **Low Vision Keyboard** as the default input method
+4. Enable **SeeMoreBoard**
+5. Set **SeeMoreBoard** as the default input method
 
 ---
 

@@ -149,7 +149,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ### 8.2 Enable Keyboard
-Settings → General Management → Keyboard List and Default → Enable Low Vision Keyboard → Set as default.
+Settings → General Management → Keyboard List and Default → Enable SeeMoreBoard → Set as default.
 
 ### 8.3 Test Settings
 1. Open a text field.

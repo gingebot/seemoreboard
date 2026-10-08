@@ -6,7 +6,7 @@ Feature 010 introduces a **dedicated full‑screen Settings Activity** that repl
 
 Additionally, this feature wires the new Settings Activity into **Android system settings**, so that:
 
-**Settings → General Management → Keyboard List → Low Vision Keyboard → “Keyboard settings”**
+**Settings → General Management → Keyboard List → SeeMoreBoard → “Keyboard settings”**
 
 will launch the same full‑screen Settings Activity.
 
@@ -143,7 +143,7 @@ fun openSettingsActivity() {
 
 ### 4.5 AndroidManifest Integration
 
-Inside the `<service>` declaration for `LowVisionKeyboardService`:
+Inside the `<service>` declaration for `SeeMoreBoardService`:
 
 ```
 <meta-data

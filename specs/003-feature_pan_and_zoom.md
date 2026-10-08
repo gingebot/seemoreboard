@@ -66,7 +66,7 @@ so I can make keys larger and move them into my comfortable viewing area.
 
 - Haptic feedback remains unchanged.
 - Logging still reports:
-  - `[LowVisionKeyboard] Key pressed: X`
+  - `[SeeMoreBoard] Key pressed: X`
 
 ---
 
@@ -167,12 +167,12 @@ On the Samsung device:
 1. Open **Settings**
 2. Go to **General Management**
 3. Tap **Keyboard List and Default**
-4. Enable **Low Vision Keyboard**
-5. Set **Low Vision Keyboard** as the default input method
+4. Enable **SeeMoreBoard**
+5. Set **SeeMoreBoard** as the default input method
 
 
 ## 8.2 Enable Keyboard
-Settings → General Management → Keyboard List and Default → Enable Low Vision Keyboard → Set as default.
+Settings → General Management → Keyboard List and Default → Enable SeeMoreBoard → Set as default.
 
 ## 8.3 Test Zoom & Pan
 1. Open a text field.

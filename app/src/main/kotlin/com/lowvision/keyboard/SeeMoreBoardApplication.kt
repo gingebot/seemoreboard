@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.emoji2.bundled.BundledEmojiCompatConfig
 import androidx.emoji2.text.EmojiCompat
 
-class LowVisionKeyboardApplication : Application() {
+class SeeMoreBoardApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 

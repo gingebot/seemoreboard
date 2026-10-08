@@ -105,7 +105,7 @@ When a key is tapped:
 **`ime/integration/InputConnectionBridge.kt`**
 - Ensure `typeCharacter(key)` works for all characters.
 
-**`ime/service/LowVisionKeyboardService.kt`**
+**`ime/service/SeeMoreBoardService.kt`**
 - Replace `SingleKeyView` with `QwertyKeyboardView`.
 
 ---
@@ -117,7 +117,7 @@ When a key is tapped:
 - Tapping any key inserts the correct character.
 - Haptic feedback fires.
 - Logcat shows:
-[LowVisionKeyboard] Key pressed: X
+[SeeMoreBoard] Key pressed: X
 
 
 ### 7.2 Visual
@@ -126,7 +126,7 @@ When a key is tapped:
 - Rows centered and evenly spaced.
 
 ### 7.3 IME Lifecycle
-- Keyboard loads via `LowVisionKeyboardService`.
+- Keyboard loads via `SeeMoreBoardService`.
 - Keyboard appears in all text fields.
 - No crashes.
 
@@ -141,7 +141,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ### 8.2 Enable Keyboard
-Settings → General Management → Keyboard List and Default → Enable Low Vision Keyboard → Set as default.
+Settings → General Management → Keyboard List and Default → Enable SeeMoreBoard → Set as default.
 
 ### 8.3 Test Input
 1. Open any text field.
@@ -156,6 +156,6 @@ Settings → General Management → Keyboard List and Default → Enable Low Vis
 2. Create QwertyKeyboardView.kt (ViewGroup with rows).
 3. Update KeyboardViewModel.onKeyPress(key).
 4. Ensure InputConnectionBridge.typeCharacter(key) works.
-5. Update LowVisionKeyboardService to return QwertyKeyboardView.
+5. Update SeeMoreBoardService to return QwertyKeyboardView.
 6. Build + deploy.
 7. Test on device.

@@ -13,23 +13,23 @@ An Android keyboard (IME) designed for people with low vision, with:
 
 ## 1.2 High‑level Components
 
-- IME Service Layer  
+- IME Service Layer
   Android `InputMethodService` implementation that integrates with the system as a keyboard.
 
-- Keyboard UI Layer (Jetpack Compose)  
+- Keyboard UI Layer (Jetpack Compose)
   Renders the keyboard, handles pan with dynamic zoom, processes touch input.
 
-- Keyboard Layout Engine  
+- Keyboard Layout Engine
   Defines key positions, labels, hitboxes, and recalculates layout under zoom/pan.
 
-- Input Handling Layer  
+- Input Handling Layer
   Bridges UI events to `InputConnection`.
 
-- Settings Layer  
--   Stores preferences (zoom, pan sensitivity, haptics, audio, keyboard height, emoji size, and recent emoji) via DataStore.
+- Settings Layer
+  Stores preferences (zoom, haptics, theme, keyboard height, emoji size, and recent emoji) via DataStore.
   Settings UI is a full‑screen Activity launched from IME (⚙ key). Android system settings integration is declared via `android.view.im.settingsActivity` metadata but not honoured by Samsung devices (metadata reads as null system‑side for third‑party IMEs).
 
-- Accessibility Layer  
+- Accessibility Layer
   Integrates accessibility APIs and TextToSpeech (later roadmap).
 
 # 2. Technology Stack
@@ -102,7 +102,7 @@ app/
 │
 ├── ime/
 │   ├── service/
-│   │   └── LowVisionKeyboardService.kt
+│   │   └── SeeMoreBoardService.kt
 │   ├── integration/
 │   │   └── InputConnectionBridge.kt
 │   └── config/
@@ -117,7 +117,8 @@ app/
 │   ├── components/
 │   │   └── KeyButton.kt
 │   ├── settings/
-│   │   └── SettingsActivity.kt
+│   │   ├── SettingsActivity.kt
+│   │   └── KeyboardPreview.kt
 │   ├── theme/
 │   │   └── Color.kt
 │   └── gestures/
@@ -170,7 +171,8 @@ This structure ensures:
 5. `InputConnectionBridge` calls methods on `InputConnection`:
    - `commitText()` for characters
     - Unicode-aware surrounding-text deletion for backspace
-    - `sendKeyEvent()` for enter, etc.
+    - `sendKeyEvent()` for Enter and Return behavior.
+    - `performEditorAction()` for contextual actions such as Search, Go, Next, Done, and Send.
     - `commitText()` for selected custom-picker emoji
 6. Haptic feedback is triggered via:
    - `performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)`
@@ -186,9 +188,9 @@ This structure ensures:
    - tap‑to‑cancel during fling
 3. Zoom is user‑controlled via a slider in Settings (range 1×–3×, defaults to 1×). No pinch‑zoom.
 4. Zoom changes trigger `LaunchedEffect` in `PanContainer` to reclamp `currentOffset`.
-4. `KeyboardViewModel.updatePan()` updates `KeyboardState` offset values.
-5. `KeyboardScreen` recomposes with `graphicsLayer` scale/translation.
-6. `LayoutCalculator` recalculates key hitboxes based on zoom/pan.
+5. `KeyboardViewModel.updatePan()` updates `KeyboardState` offset values.
+6. `KeyboardScreen` recomposes with `graphicsLayer` scale/translation.
+7. `LayoutCalculator` recalculates key hitboxes based on zoom/pan.
 
 ---
 
@@ -196,7 +198,7 @@ This structure ensures:
 
 1. User taps ⚙ key → IME launches `SettingsActivity` via `Intent.FLAG_ACTIVITY_NEW_TASK`.
 2. Android system settings may launch `SettingsActivity` via `android.view.im.settingsActivity` manifest meta‑data — works on stock Android; **not honoured on Samsung devices** (third‑party IME metadata is ignored).
-3. User changes settings (zoom slider, height slider, haptic toggle, high contrast toggle).
+3. User changes settings (zoom slider, height slider, haptic toggle, theme, or emoji size).
 4. `SettingsUseCases` update `KeyboardSettings` persisted via `DataStoreSettingsRepository`.
 5. `KeyboardViewModel` observes settings via `Flow<KeyboardSettings>` and applies reactively to the IME.
 6. SettingsActivity uses its own `zoomValue` local state for smooth slider tracking, persisting via `SettingsUseCases`.
@@ -205,7 +207,7 @@ This structure ensures:
 
 ## 5.1 IME Service
 
-`LowVisionKeyboardService` is the core entry point of the keyboard.  
+`SeeMoreBoardService` is the core entry point of the keyboard.
 It extends `InputMethodService` and manages the lifecycle of the keyboard UI and the connection
 to the active text field.
 
@@ -225,6 +227,7 @@ to the active text field.
   - password fields
   - email fields
   - multiline fields
+  - `imeOptions` and `IME_FLAG_NO_ENTER_ACTION` for contextual Return/Search/Go/Next/Done/Send behavior.
 - Delegate fullscreen/extract-mode decisions to Android's `InputMethodService` and the host editor configuration. In landscape or fullscreen contexts, Android may provide its system-managed extract editor and action controls.
 - Manage IME configuration via `ImeConfig`.
 
@@ -242,7 +245,7 @@ This ensures the keyboard UI is fully Compose‑driven rather than XML‑based.
 
 The IME service must be declared in `AndroidManifest.xml` with:
 
-- A `<service>` element for `LowVisionKeyboardService`
+- A `<service>` element for `SeeMoreBoardService`
 - The `android.permission.BIND_INPUT_METHOD` permission
 - An `<intent-filter>` for `android.view.InputMethod`
 - A `<meta-data>` element referencing the input method subtype XML
@@ -264,6 +267,7 @@ for the rest of the keyboard to use.
 - `commitText(text: String)` for emoji and other committed text
 - `refreshCursor()` for a post-layout editor redraw request
 - `submit()` (Enter key)
+- `performEditorAction(actionId: Int)` for contextual editor actions
 - `sendKeyEvent(KeyEvent)`
 
 ### Why this abstraction matters
@@ -389,19 +393,18 @@ reactively.
 
 `KeyboardSettings` defines all configurable options:
 
-- `zoomLevel: Float`  
-- `panSensitivity: Float`  
-- `hapticEnabled: Boolean`  
-- `audioEnabled: Boolean` (later roadmap)  
+- `zoomLevel: Float`
+- `panSensitivity: Float`
+- `hapticEnabled: Boolean`
+- `audioEnabled: Boolean` (later roadmap)
 - `keyboardHeightDp: Int` — adjustable IME height (200–600dp, default 350dp)
 - `theme: KeyboardTheme` — persisted key color theme, default `BLACK_WHITE`
 
 ### Setting descriptions
 
-- **zoomLevel** – default zoom applied when the keyboard opens.  
-- **panSensitivity** – controls how fast the keyboard moves when dragged.  
-- **hapticEnabled** – enables/disables haptic feedback on key press.  
-- **audioEnabled** – enables spoken feedback via TextToSpeech (later roadmap).  
+- **zoomLevel** – default zoom applied when the keyboard opens.
+- **hapticEnabled** – enables/disables haptic feedback on key press.
+- **audioEnabled** – enables spoken feedback via TextToSpeech (later roadmap).
 - **keyboardHeightDp** – controls IME window height in density‑independent pixels via a slider in Settings.
 - **theme** – selects the key background, label, and border palette; it does not change the keyboard or IME backgrounds.
 - **emojiSize** – selects Standard (40sp/five columns), Large (56sp/four columns), or Extra large (64sp/three columns) emoji rendering.
@@ -422,10 +425,10 @@ Settings are stored using **Jetpack DataStore (Preferences)** via a
 
 Responsibilities:
 
-- Read settings from DataStore.  
-- Write updated settings to DataStore.  
+- Read settings from DataStore.
+- Write updated settings to DataStore.
 - Expose settings as a reactive `Flow<KeyboardSettings>`.
-- Persist `theme` as its enum name and safely fall back to `BLACK_WHITE` for unknown or missing values.  
+- Persist `theme` as its enum name and safely fall back to `BLACK_WHITE` for unknown or missing values.
 - Persist `emojiSize` as its enum name and safely fall back to `LARGE` for unknown or missing values.
 - Persist up to 30 recent emoji in most-recent-first order without duplicates.
 
@@ -435,20 +438,19 @@ Responsibilities:
 
 `SettingsUseCases` provide a clean API for updating settings:
 
-- `setZoomLevel(Float)`  
-- `setPanSensitivity(Float)`  
-- `setHapticEnabled(Boolean)`  
-- `setAudioEnabled(Boolean)` (later roadmap)  
-- `setKeyboardHeightDp(Int)` — clamps to 200–600 range  
-- `cycleTheme(KeyboardTheme)`  
-- `setTheme(KeyboardTheme)`  
+- `setZoomLevel(Float)`
+- `setHapticEnabled(Boolean)`
+- `setAudioEnabled(Boolean)` (later roadmap)
+- `setKeyboardHeightDp(Int)` — clamps to 200–600 range
+- `cycleTheme(KeyboardTheme)`
+- `setTheme(KeyboardTheme)`
 - `setEmojiSize(EmojiSize)`
 
 These use cases ensure:
 
-- UI never writes directly to DataStore.  
-- Cline has a predictable place to add new settings.  
-- Future features (audio, suggestions) integrate cleanly.  
+- UI never writes directly to DataStore.
+- Cline has a predictable place to add new settings.
+- Future features (audio, suggestions) integrate cleanly.
 
 ---
 
@@ -457,10 +459,10 @@ These use cases ensure:
 `KeyboardViewModel` observes `settingsFlow` from `DataStoreSettingsRepository`
 and updates `KeyboardState` automatically when:
 
-- zoom changes  
-- pan sensitivity changes  
-- haptics toggle changes  
-- keyboard height changes (via slider)  
+- zoom changes
+- pan sensitivity changes
+- haptics toggle changes
+- keyboard height changes (via slider)
 - theme changes, which update key rendering and the unified Settings preview
 - emoji size changes, which update emoji glyph size, cell height, and column count
 
@@ -473,7 +475,7 @@ The keyboard UI always reflects the latest settings without manual refresh.
 Settings must be applied when:
 
 - the keyboard view is created (`onCreateInputView`) — initial height from default/persisted value
-- the input view starts (`onStartInputView`) and Android measures the Compose root using the persisted height  
+- the input view starts (`onStartInputView`) and Android measures the Compose root using the persisted height
 - the user changes settings mid‑session — `KeyboardState.keyboardHeightDp` recomposes the Compose root without overriding Android's orientation/inset measurement
 
 Pan offset values must be applied immediately to avoid disorientation.
@@ -494,13 +496,13 @@ Automated coverage includes JVM tests for emoji parsing, categories, variants, r
 
 The settings architecture supports:
 
-- custom color themes  
-- custom key layouts  
-- audio feedback profiles  
-- gesture sensitivity tuning  
-- accessibility presets  
+- custom color themes
+- custom key layouts
+- audio feedback profiles
+- gesture sensitivity tuning
+- accessibility presets
 - adjustable IME height (slider)
-- ergonomic resizing controls  
+- ergonomic resizing controls
 
 # 8. AI Assistant Integration Rules
 
@@ -648,7 +650,7 @@ and easy for Cline + DeepSeek to extend.
 Use **PascalCase** for Kotlin files containing classes:
 
 - `KeyboardViewModel.kt`
-- `LowVisionKeyboardService.kt`
+- `SeeMoreBoardService.kt`
 - `InputConnectionBridge.kt`
 - `KeyboardLayout.kt`
 - `KeyboardSettings.kt`
@@ -703,9 +705,9 @@ Use **camelCase** for functions:
 
 Functions should be:
 
-- short  
-- single‑purpose  
-- side‑effect‑free when possible  
+- short
+- single‑purpose
+- side‑effect‑free when possible
 
 ---
 
@@ -789,10 +791,10 @@ Use comments sparingly:
 
 Naming conventions must support future roadmap items:
 
-- predictive text  
-- audio feedback  
-- advanced accessibility modes  
-- custom layouts  
+- predictive text
+- audio feedback
+- advanced accessibility modes
+- custom layouts
 
 This ensures new features integrate cleanly without renaming existing modules.
 
@@ -936,13 +938,13 @@ It ensures the keyboard is accessible, maintainable, and easy for Cline + DeepSe
 
 ## 11.1 Core Principles
 
-- **Compose‑first UI**  
+- **Compose‑first UI**
   All rendering, gestures, and accessibility semantics are implemented in Jetpack Compose.
 
-- **IME‑correctness**  
-  Input handling is isolated in `InputConnectionBridge` and managed by `LowVisionKeyboardService`.
+- **IME‑correctness**
+  Input handling is isolated in `InputConnectionBridge` and managed by `SeeMoreBoardService`.
 
-- **Separation of concerns**  
+- **Separation of concerns**
   Each module has a single responsibility:
   - IME integration
   - UI rendering
@@ -950,10 +952,10 @@ It ensures the keyboard is accessible, maintainable, and easy for Cline + DeepSe
   - settings persistence
   - accessibility support
 
-- **Predictable data flow**  
+- **Predictable data flow**
   UI → ViewModel → Layout Engine → InputConnection → IME
 
-- **Reactive state**  
+- **Reactive state**
   Settings and keyboard state update via Kotlin Flow.
 
 ---
@@ -962,10 +964,10 @@ It ensures the keyboard is accessible, maintainable, and easy for Cline + DeepSe
 
 The architecture ensures:
 
-- predictable file structure  
-- consistent naming conventions  
-- minimal coupling between modules  
-- safe extension points for future features  
+- predictable file structure
+- consistent naming conventions
+- minimal coupling between modules
+- safe extension points for future features
 - clear debugging paths (UI → ViewModel → Layout → IME)
 
 ---
@@ -974,11 +976,11 @@ The architecture ensures:
 
 Accessibility is not an add‑on — it is a core design pillar:
 
-- large touch targets  
-- zoom + pan  
-- high‑contrast mode  
-- spoken feedback (future)  
-- correct accessibility events  
+- large touch targets
+- zoom + pan
+- high‑contrast mode
+- spoken feedback (future)
+- correct accessibility events
 
 ---
 
@@ -986,12 +988,12 @@ Accessibility is not an add‑on — it is a core design pillar:
 
 The architecture supports:
 
-- predictive text  
-- audio feedback  
-- custom layouts  
-- advanced accessibility modes  
-- gesture enhancements  
-- theming and visual customization  
+- predictive text
+- audio feedback
+- custom layouts
+- advanced accessibility modes
+- gesture enhancements
+- theming and visual customization
 
 All future features integrate into existing modules without architectural drift.
 
@@ -1001,11 +1003,11 @@ All future features integrate into existing modules without architectural drift.
 
 The project is intentionally designed for AI‑assisted development:
 
-- clear module boundaries  
-- explicit responsibilities  
-- consistent naming  
-- minimal ambiguity  
-- safe extension points  
+- clear module boundaries
+- explicit responsibilities
+- consistent naming
+- minimal ambiguity
+- safe extension points
 
 This ensures Cline + DeepSeek can implement features reliably and without breaking IME behavior.
 
@@ -1014,5 +1016,5 @@ This ensures Cline + DeepSeek can implement features reliably and without breaki
 ## 11.6 Final Statement
 
 This architecture is the **single source of truth** for how the Low‑Vision Keyboard must be built,
-extended, and maintained.  
+extended, and maintained.
 All future specs, tasks, and features must align with this document.

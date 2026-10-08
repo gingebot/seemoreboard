@@ -2,6 +2,7 @@ package com.lowvision.keyboard.ui.keyboard
 
 import android.content.Context
 import android.content.Intent
+import android.view.inputmethod.EditorInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lowvision.keyboard.domain.settings.SettingsUseCases
@@ -95,6 +96,25 @@ class KeyboardViewModel(
             )
         }
         Logging.log("Key pressed: $char")
+    }
+
+    fun setEditorInfo(info: EditorInfo?) {
+        val options = info?.imeOptions ?: 0
+        val action = if (options and EditorInfo.IME_FLAG_NO_ENTER_ACTION != 0) {
+            EditorInfo.IME_ACTION_NONE
+        } else {
+            options and EditorInfo.IME_MASK_ACTION
+        }
+        _state.update { it.copy(editorAction = action) }
+    }
+
+    fun onEditorAction() {
+        val action = _state.value.editorAction
+        if (action == EditorInfo.IME_ACTION_NONE) {
+            inputBridge.submit()
+        } else {
+            inputBridge.performEditorAction(action)
+        }
     }
 
     fun toggleShift() {

@@ -1,6 +1,7 @@
 package com.lowvision.keyboard.ui.keyboard
 
 import android.view.HapticFeedbackConstants
+import android.view.inputmethod.EditorInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -64,7 +65,8 @@ fun KeyboardScreen(viewModel: KeyboardViewModel) {
                 onToggleShift = { viewModel.toggleShift() },
                 onToggleLayer = { viewModel.toggleLayer() },
                 onOpenSettings = { viewModel.openSettingsActivity() },
-                onOpenEmojiPicker = { viewModel.handleEmojiKey() }
+                onOpenEmojiPicker = { viewModel.handleEmojiKey() },
+                onEditorAction = { viewModel.onEditorAction() }
             )
         }
         }
@@ -78,7 +80,8 @@ private fun KeyboardLayout(
     onToggleShift: () -> Unit,
     onToggleLayer: () -> Unit,
     onOpenSettings: () -> Unit,
-    onOpenEmojiPicker: () -> Unit
+    onOpenEmojiPicker: () -> Unit,
+    onEditorAction: () -> Unit
 ) {
     Column(
         modifier = Modifier,
@@ -117,6 +120,19 @@ private fun KeyboardLayout(
                             "ABC" -> 1.8f
                             else -> 1f
                         }
+                        val isEditorAction = label == "\u23CE"
+                        val actionLabel = if (isEditorAction) {
+                            when (state.editorAction) {
+                                EditorInfo.IME_ACTION_SEARCH -> "Search"
+                                EditorInfo.IME_ACTION_GO -> "Go"
+                                EditorInfo.IME_ACTION_NEXT -> "Next"
+                                EditorInfo.IME_ACTION_DONE -> "Done"
+                                EditorInfo.IME_ACTION_SEND -> "Send"
+                                else -> "\u23CE"
+                            }
+                        } else {
+                            label
+                        }
                         val onClick: () -> Unit = when (label) {
                             "Shift" -> onToggleShift
                             "\u232B" -> ({ onKeyPress("⌫") })
@@ -126,7 +142,7 @@ private fun KeyboardLayout(
                             "\uD83D\uDE42" -> onOpenEmojiPicker
                             "Space" -> ({ onKeyPress(" ") })
                             "." -> ({ onKeyPress(".") })
-                            "\u23CE" -> ({ onKeyPress("\n") })
+                            "\u23CE" -> onEditorAction
                             else -> ({})
                         }
                         // Shift key gets state-based background color
@@ -141,15 +157,20 @@ private fun KeyboardLayout(
                             Modifier.weight(weight)
                         }
                         KeyButton(
-                            label = if (label == "Shift") "\u21E7" else label,
+                            label = when {
+                                label == "Shift" -> "\u21E7"
+                                isEditorAction -> actionLabel
+                                else -> label
+                            },
                             theme = state.theme,
                             modifier = shiftMod,
                             enabled = true,
                             contentDescription = if (label == "\uD83D\uDE42") {
                                 "Open emoji picker"
                             } else {
-                                label
+                                actionLabel
                             },
+                            showSearchIcon = isEditorAction && state.editorAction == EditorInfo.IME_ACTION_SEARCH,
                             height = keyHeight,
                             onClick = onClick
                         )

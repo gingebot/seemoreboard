@@ -19,7 +19,7 @@ import com.lowvision.keyboard.ime.integration.InputConnectionBridge
 import com.lowvision.keyboard.ui.keyboard.KeyboardScreen
 import com.lowvision.keyboard.ui.keyboard.KeyboardViewModel
 
-class LowVisionKeyboardService : InputMethodService() {
+class SeeMoreBoardService : InputMethodService() {
 
     private lateinit var inputBridge: InputConnectionBridge
     private lateinit var settingsUseCases: SettingsUseCases
@@ -79,6 +79,7 @@ class LowVisionKeyboardService : InputMethodService() {
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
         inputBridge.setInputConnection(currentInputConnection)
+        viewModel.setEditorInfo(info)
     }
 
     override fun onFinishInputView(finishingInput: Boolean) {
@@ -87,6 +88,7 @@ class LowVisionKeyboardService : InputMethodService() {
     }
 
     override fun onEvaluateInputViewShown(): Boolean {
+        super.onEvaluateInputViewShown()
         return true
     }
 

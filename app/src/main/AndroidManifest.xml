@@ -2,13 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
-        android:name=".LowVisionKeyboardApplication"
+        android:name=".SeeMoreBoardApplication"
         android:allowBackup="true"
-        android:label="Low Vision Keyboard"
+        android:label="SeeMoreBoard"
         android:supportsRtl="true">
 
         <service
-            android:name=".ime.service.LowVisionKeyboardService"
+            android:name=".ime.service.SeeMoreBoardService"
             android:permission="android.permission.BIND_INPUT_METHOD"
             android:exported="true">
             <intent-filter>
@@ -25,7 +25,7 @@
         <activity
             android:name="com.lowvision.keyboard.ui.settings.SettingsActivity"
             android:exported="true"
-            android:label="Low Vision Keyboard Settings" />
+            android:label="SeeMoreBoard Settings" />
 
     </application>
 

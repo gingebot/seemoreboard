@@ -1,5 +1,6 @@
 package com.lowvision.keyboard.ui.keyboard
 
+import android.view.inputmethod.EditorInfo
 import com.lowvision.keyboard.ui.theme.KeyboardTheme
 import com.lowvision.keyboard.domain.settings.EmojiSize
 
@@ -20,5 +21,6 @@ data class KeyboardState(
     val theme: KeyboardTheme = KeyboardTheme.BLACK_WHITE,
     val emojiPickerVisible: Boolean = false,
     val recentEmoji: List<String> = emptyList(),
-    val emojiSize: EmojiSize = EmojiSize.LARGE
+    val emojiSize: EmojiSize = EmojiSize.LARGE,
+    val editorAction: Int = EditorInfo.IME_ACTION_NONE
 )
