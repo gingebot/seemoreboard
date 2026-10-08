@@ -26,7 +26,7 @@ An Android keyboard (IME) designed for people with low vision, with:
   Bridges UI events to `InputConnection`.
 
 - Settings Layer  
-  Stores preferences (zoom, pan sensitivity, haptics, audio, keyboard height) via DataStore.
+-   Stores preferences (zoom, pan sensitivity, haptics, audio, keyboard height, emoji size, and recent emoji) via DataStore.
   Settings UI is a full‑screen Activity launched from IME (⚙ key). Android system settings integration is declared via `android.view.im.settingsActivity` metadata but not honoured by Samsung devices (metadata reads as null system‑side for third‑party IMEs).
 
 - Accessibility Layer  
@@ -169,9 +169,9 @@ This structure ensures:
 4. `KeyAction` is passed to `InputConnectionBridge`.
 5. `InputConnectionBridge` calls methods on `InputConnection`:
    - `commitText()` for characters
-   - `deleteSurroundingText()` for backspace
-   - `sendKeyEvent()` for enter, etc.
-   - `commitText()` for selected Jetpack emoji
+    - Unicode-aware surrounding-text deletion for backspace
+    - `sendKeyEvent()` for enter, etc.
+    - `commitText()` for selected custom-picker emoji
 6. Haptic feedback is triggered via:
    - `performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)`
 
@@ -259,8 +259,10 @@ for the rest of the keyboard to use.
 
 ### Responsibilities
 
-- `typeCharacter(char: Char)`
+- `typeCharacter(text: String)`
 - `deleteCharacter()`
+- `commitText(text: String)` for emoji and other committed text
+- `refreshCursor()` for a post-layout editor redraw request
 - `submit()` (Enter key)
 - `sendKeyEvent(KeyEvent)`
 
@@ -402,6 +404,7 @@ reactively.
 - **audioEnabled** – enables spoken feedback via TextToSpeech (later roadmap).  
 - **keyboardHeightDp** – controls IME window height in density‑independent pixels via a slider in Settings.
 - **theme** – selects the key background, label, and border palette; it does not change the keyboard or IME backgrounds.
+- **emojiSize** – selects Standard (40sp/five columns), Large (56sp/four columns), or Extra large (64sp/three columns) emoji rendering.
 
 Supported key themes:
 
@@ -423,6 +426,8 @@ Responsibilities:
 - Write updated settings to DataStore.  
 - Expose settings as a reactive `Flow<KeyboardSettings>`.
 - Persist `theme` as its enum name and safely fall back to `BLACK_WHITE` for unknown or missing values.  
+- Persist `emojiSize` as its enum name and safely fall back to `LARGE` for unknown or missing values.
+- Persist up to 30 recent emoji in most-recent-first order without duplicates.
 
 ---
 
@@ -437,6 +442,7 @@ Responsibilities:
 - `setKeyboardHeightDp(Int)` — clamps to 200–600 range  
 - `cycleTheme(KeyboardTheme)`  
 - `setTheme(KeyboardTheme)`  
+- `setEmojiSize(EmojiSize)`
 
 These use cases ensure:
 
@@ -456,6 +462,7 @@ and updates `KeyboardState` automatically when:
 - haptics toggle changes  
 - keyboard height changes (via slider)  
 - theme changes, which update key rendering and the unified Settings preview
+- emoji size changes, which update emoji glyph size, cell height, and column count
 
 The keyboard UI always reflects the latest settings without manual refresh.
 
@@ -473,7 +480,13 @@ Pan offset values must be applied immediately to avoid disorientation.
 Height changes recompose the Compose root; Android retains control of the surrounding IME window, orientation, insets, and extract-mode layout.
 Theme changes recompose key components only; keyboard and IME root backgrounds remain unchanged.
 `SettingsActivity` displays the active theme and a unified `Q W E R T` preview scaled with the current zoom.
-The emoji key switches the IME to a custom full-height emoji picker. Category CSV resources provide the emoji data, EmojiCompat renders each glyph using the bundled font, recent emoji are persisted in DataStore, and long-press variant selection is supported. Selected emoji values are committed through `InputConnectionBridge.commitText()`.
+The emoji key switches the IME to a custom full-height emoji picker. Category CSV resources provide the emoji data, EmojiCompat renders each glyph using the bundled font, recent emoji are persisted in DataStore, emoji size is configurable, and long-press variant selection is supported. Selected emoji values are committed through `InputConnectionBridge.commitText()`.
+
+The normal keyboard uses the persisted configured height; the emoji picker expands to the maximum height Android permits for the current IME window. It remains inside the IME and is not a full-screen activity or overlay.
+
+The picker is implemented in `EmojiPickerContent.kt` with native `TextView` cells because the stock Jetpack picker renderer was incompatible with the target device and did not provide the required low-vision sizing.
+
+Automated coverage includes JVM tests for emoji parsing, categories, variants, recents, sizing, and Unicode-aware deletion, plus connected Compose tests for category and variant picker behavior. Host-app cursor rendering remains a manual device check; WhatsApp has a known cursor redraw quirk after the IME height transition even though input remains focused and usable.
 
 ---
 

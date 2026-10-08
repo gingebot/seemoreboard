@@ -1,4 +1,4 @@
-# Feature 013 — Embedded Jetpack Emoji Picker
+# Feature 013 — Embedded Custom Low-Vision Emoji Picker
 
 ## 1. Overview
 
@@ -52,7 +52,7 @@ The custom picker is hosted in Compose and uses native `TextView` cells to prese
 
 ### 4.2 KeyboardState
 
-Add `val emojiPickerVisible: Boolean = false`.
+Add `val emojiPickerVisible: Boolean = false`, plus the persisted emoji size and recent-emoji state used by the custom picker.
 
 ### 4.3 KeyAction
 
@@ -87,15 +87,15 @@ Document the custom category picker, EmojiCompat/native `TextView` rendering, re
 
 ## 5. Acceptance Criteria
 
-1. Tapping 🙂 opens the embedded Jetpack emoji picker.
-2. Picker displays Jetpack-supplied navigation, variants, and recents.
+1. Tapping 🙂 opens the embedded custom emoji picker.
+2. Picker displays app-owned category navigation, variants, and recents.
 3. Selecting an emoji inserts it into the active text field.
 4. Picker closes after selection and the keyboard returns.
 5. Emoji key remains zoomable and pannable.
 6. Keyboard zoom/pan state is retained after picker close.
 7. TalkBack announces “Open emoji picker”.
 8. Picker selection remains accessible.
-9. No custom emoji data or grid is maintained by this project.
+9. Category CSV data, the custom grid, recent emoji, and variant relationships are maintained by this project.
 10. No IME flicker or crash occurs when opening/closing the picker.
 
 ## 6. Testing Checklist
@@ -105,5 +105,5 @@ Document the custom category picker, EmojiCompat/native `TextView` rendering, re
 - Select emoji in WhatsApp, Messages, Chrome, and Notes.
 - Verify keyboard return and zoom/pan retention after selection.
 - Verify TalkBack announces the emoji key.
-- Verify Jetpack-provided variants, navigation, and recents.
+- Verify app-owned variants, category navigation, and recents.
 - Rotate and switch IMEs while the picker is closed.
