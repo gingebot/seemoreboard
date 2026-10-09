@@ -4,7 +4,9 @@
     <application
         android:name=".SeeMoreBoardApplication"
         android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
         android:label="SeeMoreBoard"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true">
 
         <service
