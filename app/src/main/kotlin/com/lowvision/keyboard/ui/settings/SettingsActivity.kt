@@ -73,6 +73,17 @@ class SettingsActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        refreshInputMethodState()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            refreshInputMethodState()
+        }
+    }
+
+    private fun refreshInputMethodState() {
         isSeeMoreBoardEnabled = isInputMethodEnabled()
         isSeeMoreBoardDefault = isDefaultInputMethod()
     }
