@@ -1,6 +1,7 @@
 package com.lowvision.keyboard.ui.settings
 
 import android.content.ComponentName
+import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import android.view.inputmethod.InputMethodManager
@@ -52,6 +53,7 @@ import kotlin.math.roundToInt
 
 class SettingsActivity : ComponentActivity() {
     private lateinit var settingsUseCases: SettingsUseCases
+    private var isSeeMoreBoardEnabled by mutableStateOf(false)
     private var isSeeMoreBoardDefault by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,15 +63,32 @@ class SettingsActivity : ComponentActivity() {
             SettingsScreen(
                 useCases = settingsUseCases,
                 onClose = { finish() },
+                isSeeMoreBoardEnabled = { isSeeMoreBoardEnabled },
                 isSeeMoreBoardDefault = { isSeeMoreBoardDefault },
-                onEnableSeeMoreBoard = ::showInputMethodPicker
+                onEnableSeeMoreBoard = ::openInputMethodSettings,
+                onSelectSeeMoreBoard = ::showInputMethodPicker
             )
         }
     }
 
     override fun onResume() {
         super.onResume()
+        isSeeMoreBoardEnabled = isInputMethodEnabled()
         isSeeMoreBoardDefault = isDefaultInputMethod()
+    }
+
+    private fun seeMoreBoardInputMethod(): String = ComponentName(
+        this,
+        SeeMoreBoardService::class.java
+    ).flattenToShortString()
+
+    private fun isInputMethodEnabled(): Boolean {
+        val inputMethodManager = getSystemService(InputMethodManager::class.java)
+            ?: return false
+        return inputMethodManager.enabledInputMethodList.any { inputMethodInfo ->
+            inputMethodInfo.packageName == packageName &&
+                inputMethodInfo.serviceName == SeeMoreBoardService::class.java.name
+        }
     }
 
     private fun isDefaultInputMethod(): Boolean {
@@ -77,11 +96,11 @@ class SettingsActivity : ComponentActivity() {
             contentResolver,
             Settings.Secure.DEFAULT_INPUT_METHOD
         )
-        val seeMoreBoardInputMethod = ComponentName(
-            this,
-            SeeMoreBoardService::class.java
-        ).flattenToShortString()
-        return currentInputMethod == seeMoreBoardInputMethod
+        return currentInputMethod == seeMoreBoardInputMethod()
+    }
+
+    private fun openInputMethodSettings() {
+        startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
     }
 
     private fun showInputMethodPicker() {
@@ -93,8 +112,10 @@ class SettingsActivity : ComponentActivity() {
 fun SettingsScreen(
     useCases: SettingsUseCases,
     onClose: () -> Unit,
+    isSeeMoreBoardEnabled: () -> Boolean = { true },
     isSeeMoreBoardDefault: () -> Boolean = { true },
-    onEnableSeeMoreBoard: () -> Unit = {}
+    onEnableSeeMoreBoard: () -> Unit = {},
+    onSelectSeeMoreBoard: () -> Unit = {}
 ) {
     val settings by useCases.settingsFlow.collectAsState(initial = KeyboardSettings())
     var zoomValue by remember { mutableFloatStateOf(settings.zoomLevel) }
@@ -104,8 +125,9 @@ fun SettingsScreen(
 
     SettingsContent(
         settings = settings,
+        isSeeMoreBoardEnabled = isSeeMoreBoardEnabled(),
         isSeeMoreBoardDefault = isSeeMoreBoardDefault(),
-        onEnableSeeMoreBoard = onEnableSeeMoreBoard,
+        onEnableSeeMoreBoard = if (isSeeMoreBoardEnabled()) onSelectSeeMoreBoard else onEnableSeeMoreBoard,
         zoomValue = zoomValue,
         heightValue = heightValue,
         onZoomChanged = { zoomValue = it; useCases.setZoomLevel(it) },
@@ -124,6 +146,7 @@ fun SettingsScreen(
 @Composable
 fun SettingsContent(
     settings: KeyboardSettings,
+    isSeeMoreBoardEnabled: Boolean = true,
     isSeeMoreBoardDefault: Boolean = true,
     onEnableSeeMoreBoard: () -> Unit = {},
     zoomValue: Float,
@@ -140,6 +163,11 @@ fun SettingsContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (!isSeeMoreBoardDefault) {
+            val enableLabel = if (isSeeMoreBoardEnabled) {
+                "Make SeeMoreBoard default"
+            } else {
+                "Tap to enable"
+            }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -153,7 +181,7 @@ fun SettingsContent(
                     fontSize = 20.sp
                 )
                 Text(
-                    "Tap to enable",
+                    enableLabel,
                     color = Color.White,
                     fontSize = 22.sp,
                     modifier = Modifier
@@ -161,7 +189,7 @@ fun SettingsContent(
                         .clickable(onClick = onEnableSeeMoreBoard)
                         .background(Color(0xFF555555))
                         .padding(horizontal = 24.dp, vertical = 16.dp)
-                        .semantics { contentDescription = "Tap to enable SeeMoreBoard keyboard" }
+                        .semantics { contentDescription = enableLabel }
                 )
             }
         }

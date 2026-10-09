@@ -59,7 +59,7 @@ After `task install`:
 3. Select SeeMoreBoard as the current/default keyboard.
 4. Open keyboard settings using the keyboard settings key, or use the system keyboard settings entry where supported.
 
-If SeeMoreBoard is not the active keyboard, its settings page shows a **Tap to enable** button. Tapping it opens Android’s input-method picker; Android requires the user to confirm the keyboard selection.
+If SeeMoreBoard is not enabled, its settings page shows a **Tap to enable** button that opens Android’s keyboard settings. If it is enabled but another keyboard is active, the page shows **Make SeeMoreBoard default** and opens Android’s input-method picker. Android requires the user to confirm both choices.
 
 The IME subtype is configured as **English (UK)**. Device manufacturers may place input-method settings in different locations, and some Samsung versions do not launch the settings activity through the standard IME metadata entry.
 
