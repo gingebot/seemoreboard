@@ -4,6 +4,18 @@ SeeMoreBoard is an Android input method (IME) designed for people with low visio
 
 The application is written in Kotlin with Jetpack Compose and uses Android DataStore for settings persistence.
 
+## License
+
+SeeMoreBoard is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version. See [LICENSE](LICENSE) for the complete
+license text.
+
+See [NOTICE](NOTICE) for project copyright information, original artwork
+and resource attribution, emoji-data qualifications, and third-party
+software notices.
+
 ## Requirements
 
 - JDK 17
