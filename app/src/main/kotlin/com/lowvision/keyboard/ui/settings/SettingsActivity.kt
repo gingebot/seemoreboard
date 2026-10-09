@@ -1,6 +1,9 @@
 package com.lowvision.keyboard.ui.settings
 
+import android.content.ComponentName
 import android.os.Bundle
+import android.provider.Settings
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -44,20 +47,55 @@ import com.lowvision.keyboard.data.settings.DataStoreSettingsRepository
 import com.lowvision.keyboard.domain.settings.EmojiSize
 import com.lowvision.keyboard.domain.settings.KeyboardSettings
 import com.lowvision.keyboard.domain.settings.SettingsUseCases
+import com.lowvision.keyboard.ime.service.SeeMoreBoardService
 import kotlin.math.roundToInt
 
 class SettingsActivity : ComponentActivity() {
     private lateinit var settingsUseCases: SettingsUseCases
+    private var isSeeMoreBoardDefault by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         settingsUseCases = SettingsUseCases(DataStoreSettingsRepository(applicationContext))
-        setContent { SettingsScreen(settingsUseCases, onClose = { finish() }) }
+        setContent {
+            SettingsScreen(
+                useCases = settingsUseCases,
+                onClose = { finish() },
+                isSeeMoreBoardDefault = { isSeeMoreBoardDefault },
+                onEnableSeeMoreBoard = ::showInputMethodPicker
+            )
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        isSeeMoreBoardDefault = isDefaultInputMethod()
+    }
+
+    private fun isDefaultInputMethod(): Boolean {
+        val currentInputMethod = Settings.Secure.getString(
+            contentResolver,
+            Settings.Secure.DEFAULT_INPUT_METHOD
+        )
+        val seeMoreBoardInputMethod = ComponentName(
+            this,
+            SeeMoreBoardService::class.java
+        ).flattenToShortString()
+        return currentInputMethod == seeMoreBoardInputMethod
+    }
+
+    private fun showInputMethodPicker() {
+        getSystemService(InputMethodManager::class.java)?.showInputMethodPicker()
     }
 }
 
 @Composable
-fun SettingsScreen(useCases: SettingsUseCases, onClose: () -> Unit) {
+fun SettingsScreen(
+    useCases: SettingsUseCases,
+    onClose: () -> Unit,
+    isSeeMoreBoardDefault: () -> Boolean = { true },
+    onEnableSeeMoreBoard: () -> Unit = {}
+) {
     val settings by useCases.settingsFlow.collectAsState(initial = KeyboardSettings())
     var zoomValue by remember { mutableFloatStateOf(settings.zoomLevel) }
     var heightValue by remember { mutableIntStateOf(settings.keyboardHeightDp) }
@@ -66,6 +104,8 @@ fun SettingsScreen(useCases: SettingsUseCases, onClose: () -> Unit) {
 
     SettingsContent(
         settings = settings,
+        isSeeMoreBoardDefault = isSeeMoreBoardDefault(),
+        onEnableSeeMoreBoard = onEnableSeeMoreBoard,
         zoomValue = zoomValue,
         heightValue = heightValue,
         onZoomChanged = { zoomValue = it; useCases.setZoomLevel(it) },
@@ -84,6 +124,8 @@ fun SettingsScreen(useCases: SettingsUseCases, onClose: () -> Unit) {
 @Composable
 fun SettingsContent(
     settings: KeyboardSettings,
+    isSeeMoreBoardDefault: Boolean = true,
+    onEnableSeeMoreBoard: () -> Unit = {},
     zoomValue: Float,
     heightValue: Int,
     onZoomChanged: (Float) -> Unit,
@@ -97,6 +139,33 @@ fun SettingsContent(
         modifier = Modifier.fillMaxSize().background(Color.Black).verticalScroll(rememberScrollState()).padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        if (!isSeeMoreBoardDefault) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF333333))
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "SeeMoreBoard is not the active keyboard",
+                    color = Color.White,
+                    fontSize = 20.sp
+                )
+                Text(
+                    "Tap to enable",
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    modifier = Modifier
+                        .padding(top = 12.dp)
+                        .clickable(onClick = onEnableSeeMoreBoard)
+                        .background(Color(0xFF555555))
+                        .padding(horizontal = 24.dp, vertical = 16.dp)
+                        .semantics { contentDescription = "Tap to enable SeeMoreBoard keyboard" }
+                )
+            }
+        }
+
         Spacer(Modifier.height(16.dp))
         Text("Zoom: %.1fx".format(zoomValue), color = Color.White, fontSize = 22.sp)
         Slider(value = zoomValue, onValueChange = onZoomChanged, valueRange = 1f..3f, modifier = Modifier.fillMaxWidth(), colors = sliderColors())

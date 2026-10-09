@@ -59,7 +59,19 @@ After `task install`:
 3. Select SeeMoreBoard as the current/default keyboard.
 4. Open keyboard settings using the keyboard settings key, or use the system keyboard settings entry where supported.
 
+If SeeMoreBoard is not the active keyboard, its settings page shows a **Tap to enable** button. Tapping it opens Android’s input-method picker; Android requires the user to confirm the keyboard selection.
+
 The IME subtype is configured as **English (UK)**. Device manufacturers may place input-method settings in different locations, and some Samsung versions do not launch the settings activity through the standard IME metadata entry.
+
+The APK also exposes `SeeMoreBoard Settings` as its Android launcher activity. This allows cloud testing services that require a traditional `MAIN`/`LAUNCHER` activity to install and launch the APK. Launching SeeMoreBoard opens the settings screen; it does not display the keyboard by itself. To test the keyboard, enable and select SeeMoreBoard as the active input method, then focus a text field in a host application.
+
+For IME-focused device testing, the active input method can also be selected with ADB:
+
+```bash
+adb shell ime list -s
+adb shell ime enable com.lowvision.keyboard/.ime.service.SeeMoreBoardService
+adb shell ime set com.lowvision.keyboard/.ime.service.SeeMoreBoardService
+```
 
 ## Project structure
 

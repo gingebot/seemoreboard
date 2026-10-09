@@ -38,6 +38,14 @@ class SettingsBehaviorTest {
     }
 
     @Test
+    fun inactiveKeyboardShowsEnableButton() {
+        setSettingsContent(isSeeMoreBoardDefault = false)
+
+        composeRule.onNodeWithContentDescription("Tap to enable SeeMoreBoard keyboard")
+            .assertTextContains("Tap to enable")
+    }
+
+    @Test
     fun selectingEmojiSizeUpdatesDisplayedValue() {
         setSettingsContent()
 
@@ -46,13 +54,14 @@ class SettingsBehaviorTest {
         composeRule.onNodeWithContentDescription("Emoji Size Extra large").assertTextContains("Extra large")
     }
 
-    private fun setSettingsContent() {
+    private fun setSettingsContent(isSeeMoreBoardDefault: Boolean = true) {
         composeRule.setContent {
             val settingsState = remember {
                 mutableStateOf(KeyboardSettings(emojiSize = EmojiSize.LARGE))
             }
             SettingsContent(
                 settings = settingsState.value,
+                isSeeMoreBoardDefault = isSeeMoreBoardDefault,
                 zoomValue = settingsState.value.zoomLevel,
                 heightValue = settingsState.value.keyboardHeightDp,
                 onZoomChanged = {},
