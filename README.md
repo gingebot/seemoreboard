@@ -41,7 +41,7 @@ task install         # Build and install the debug APK
 task deploy          # Alias for build and install
 task logcat          # Stream SeeMoreBoard logs
 task clean           # Remove build outputs
-task release         # Assemble the release APK
+task release         # Build signed release outputs when signing variables are supplied
 ```
 
 The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
@@ -61,6 +61,16 @@ Equivalent Gradle commands are available directly:
 ./gradlew assembleDebug
 ./gradlew connectedDebugAndroidTest
 ```
+
+## Releases
+
+Releases are built and signed by GitHub Actions only. See
+[the release guide](docs/releasing.md) for the required `release`
+environment secrets and the tag-driven release process.
+
+The first release uses version `1.0.0` and version code `1`. Every later
+release must increase `app.versionCode`, update `app.versionName` in
+`gradle.properties`, and push a matching tag such as `v1.1.0`.
 
 ## Installing and enabling the IME
 

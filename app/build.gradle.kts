@@ -3,6 +3,9 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+val appVersionCode = providers.gradleProperty("app.versionCode").get().toInt()
+val appVersionName = providers.gradleProperty("app.versionName").get()
+
 android {
     namespace = "com.seemoreboard.keyboard"
     compileSdk = 34
@@ -11,9 +14,31 @@ android {
         applicationId = "com.seemoreboard.keyboard"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("ANDROID_KEYSTORE_FILE")
+            val keystorePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            val keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+            val keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+
+            if (keystorePath != null && keystorePassword != null && keyAlias != null && keyPassword != null) {
+                storeFile = file(keystorePath)
+                storePassword = keystorePassword
+                this.keyAlias = keyAlias
+                this.keyPassword = keyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+        }
     }
 
     buildFeatures {
@@ -33,6 +58,27 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
+
+val validateReleaseSigning = tasks.register("validateReleaseSigning") {
+    doLast {
+        val missing = listOf(
+            "ANDROID_KEYSTORE_FILE",
+            "ANDROID_KEYSTORE_PASSWORD",
+            "ANDROID_KEY_ALIAS",
+            "ANDROID_KEY_PASSWORD"
+        ).filter { System.getenv(it).isNullOrBlank() }
+
+        check(missing.isEmpty()) {
+            "Release signing is not configured. Missing environment variables: ${missing.joinToString()}."
+        }
+        check(file(System.getenv("ANDROID_KEYSTORE_FILE")).isFile) {
+            "Release keystore does not exist: ${System.getenv("ANDROID_KEYSTORE_FILE")}"
+        }
+    }
+}
+
+tasks.matching { it.name == "assembleRelease" || it.name == "bundleRelease" }
+    .configureEach { dependsOn(validateReleaseSigning) }
 
 dependencies {
     implementation(platform("androidx.compose:compose-bom:2024.02.00"))

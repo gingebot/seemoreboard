@@ -59,6 +59,6 @@ tasks:
       - ./gradlew clean --no-daemon
 
   release:
-    desc: Assemble the release APK
+    desc: Validate release signing configuration and assemble unsigned-local release outputs when credentials are supplied
     cmds:
-      - ./gradlew assembleRelease --no-daemon
+      - ./gradlew assembleRelease bundleRelease --no-daemon
