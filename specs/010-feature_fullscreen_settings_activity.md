@@ -53,7 +53,7 @@ This requires:
 ```
 <meta-data
     android:name="android.view.im.settingsActivity"
-    android:value="com.lowvision.keyboard.ui.settings.SettingsActivity" />
+    android:value="com.seemoreboard.keyboard.ui.settings.SettingsActivity" />
 ```
 
 inside the IME service declaration.
@@ -148,7 +148,7 @@ Inside the `<service>` declaration for `SeeMoreBoardService`:
 ```
 <meta-data
     android:name="android.view.im.settingsActivity"
-    android:value="com.lowvision.keyboard.ui.settings.SettingsActivity" />
+    android:value="com.seemoreboard.keyboard.ui.settings.SettingsActivity" />
 ```
 
 Also ensure:

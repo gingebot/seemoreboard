@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.lowvision.keyboard"
+    namespace = "com.seemoreboard.keyboard"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.lowvision.keyboard"
+        applicationId = "com.seemoreboard.keyboard"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

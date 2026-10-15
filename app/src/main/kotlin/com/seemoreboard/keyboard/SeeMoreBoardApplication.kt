@@ -1,0 +1,16 @@
+package com.seemoreboard.keyboard
+
+import android.app.Application
+import androidx.emoji2.bundled.BundledEmojiCompatConfig
+import androidx.emoji2.text.EmojiCompat
+
+class SeeMoreBoardApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+
+        EmojiCompat.init(
+            BundledEmojiCompatConfig(this)
+                .setReplaceAll(true)
+        )
+    }
+}

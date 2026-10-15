@@ -21,11 +21,11 @@
                 android:resource="@xml/method" />
             <meta-data
                 android:name="android.view.im.settingsActivity"
-                android:value="com.lowvision.keyboard.ui.settings.SettingsActivity" />
+                android:value="com.seemoreboard.keyboard.ui.settings.SettingsActivity" />
         </service>
 
         <activity
-            android:name="com.lowvision.keyboard.ui.settings.SettingsActivity"
+            android:name="com.seemoreboard.keyboard.ui.settings.SettingsActivity"
             android:exported="true"
             android:label="SeeMoreBoard Settings">
             <intent-filter>

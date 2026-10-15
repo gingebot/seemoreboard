@@ -81,14 +81,14 @@ For IME-focused device testing, the active input method can also be selected wit
 
 ```bash
 adb shell ime list -s
-adb shell ime enable com.lowvision.keyboard/.ime.service.SeeMoreBoardService
-adb shell ime set com.lowvision.keyboard/.ime.service.SeeMoreBoardService
+adb shell ime enable com.seemoreboard.keyboard/.ime.service.SeeMoreBoardService
+adb shell ime set com.seemoreboard.keyboard/.ime.service.SeeMoreBoardService
 ```
 
 ## Project structure
 
 ```text
-app/src/main/kotlin/com/lowvision/keyboard/
+app/src/main/kotlin/com/seemoreboard/keyboard/
 ├── data/                    # DataStore settings repository
 ├── domain/                  # Layout and settings models/use cases
 ├── ime/
@@ -117,7 +117,7 @@ Important entry points:
 - [Build and deploy notes](docs/build_deploy_debug.md)
 - [Feature specifications](specs/)
 
-The Android namespace and application ID remain `com.lowvision.keyboard` for package and upgrade stability. `SeeMoreBoard` is the project and user-facing product name.
+The Android namespace and application ID remain `com.seemoreboard.keyboard` for package and upgrade stability. `SeeMoreBoard` is the project and user-facing product name.
 
 ## Testing and device validation
 
