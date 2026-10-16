@@ -1,6 +1,7 @@
 # Releasing SeeMoreBoard
 
-SeeMoreBoard releases are built and signed by GitHub Actions. Do not
+SeeMoreBoard releases are built and signed by GitHub Actions. The app
+compiles against and targets Android API 36, as required by Google Play. Do not
 commit the upload keystore, passwords, or any other signing material.
 
 ## Required GitHub environment

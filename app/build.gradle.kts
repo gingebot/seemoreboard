@@ -8,12 +8,12 @@ val appVersionName = providers.gradleProperty("app.versionName").get()
 
 android {
     namespace = "com.seemoreboard.keyboard"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.seemoreboard.keyboard"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 36
         versionCode = appVersionCode
         versionName = appVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
