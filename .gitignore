@@ -20,6 +20,20 @@ TEST_SESSION.md
 *.apk
 *.aab
 
+# Secrets and signing material
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+credentials/
+secrets/
+
 # OS files
 .DS_Store
 Thumbs.db
+*.Zone.Identifier

@@ -25,8 +25,8 @@ after the job, including when the build fails.
 Update both values in `/gradle.properties` before each release:
 
 ```properties
-app.versionCode=1
-app.versionName=1.0.0
+app.versionCode=2
+app.versionName=1.0.1
 ```
 
 `app.versionCode` must be a positive integer and must be greater than the
@@ -46,8 +46,8 @@ semantic-version-style values such as `1.0.0`, `1.1.0`, and `1.1.1`.
 4. Create a tag whose name is exactly `v` followed by `app.versionName`:
 
    ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
+   git tag v1.0.1
+   git push origin v1.0.1
    ```
 
 5. GitHub Actions validates the tag, runs tests and lint, decodes the

@@ -31,7 +31,7 @@ source ~/.bashrc
 echo "Installing SDK components..."
 yes | sdkmanager \
   "platform-tools" \
-  "platforms;android-34" \
-  "build-tools;34.0.0"
+  "platforms;android-36" \
+  "build-tools;36.0.0"
 
 echo "Android SDK installation complete."

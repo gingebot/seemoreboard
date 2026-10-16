@@ -34,7 +34,7 @@ software notices.
 ## Requirements
 
 - JDK 17
-- Android SDK with API 34 installed
+- Android SDK with API 36 installed
 - An Android device or emulator for IME and instrumentation testing
 - Android Debug Bridge (`adb`) for installation and device validation
 - [Task](https://taskfile.dev/) 3.x is recommended for common workflows
@@ -83,7 +83,7 @@ Releases are built and signed by GitHub Actions only. See
 [the release guide](docs/releasing.md) for the required `release`
 environment secrets and the tag-driven release process.
 
-The first release uses version `1.0.0` and version code `1`. Every later
+The current release is version `1.0.1` with version code `2`. Every later
 release must increase `app.versionCode`, update `app.versionName` in
 `gradle.properties`, and push a matching tag such as `v1.1.0`.
 
