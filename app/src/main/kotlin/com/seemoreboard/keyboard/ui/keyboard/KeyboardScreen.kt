@@ -12,7 +12,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,6 +35,14 @@ fun KeyboardScreen(viewModel: KeyboardViewModel) {
     val state by viewModel.state.collectAsState()
     val view = LocalView.current
     val density = LocalDensity.current
+    val navigationBarPadding = with(density) {
+        ViewCompat.getRootWindowInsets(view)
+            ?.getInsets(WindowInsetsCompat.Type.navigationBars())
+            ?.bottom
+            ?.toDp()
+            ?: 0.dp
+    }
+    val keyboardHeight = with(density) { state.keyboardHeightDp.dp }
 
     Box(
         modifier = Modifier
@@ -40,35 +51,38 @@ fun KeyboardScreen(viewModel: KeyboardViewModel) {
                 if (state.emojiPickerVisible) {
                     Modifier.fillMaxHeight()
                 } else {
-                    Modifier.height(with(density) { state.keyboardHeightDp.dp })
+                    Modifier.height(keyboardHeight + navigationBarPadding)
                 }
             )
             .background(Color(0xFF1A1A1A))
+            .then(if (state.emojiPickerVisible) Modifier.navigationBarsPadding() else Modifier)
     ) {
         if (state.emojiPickerVisible) {
             EmojiPickerContent(viewModel)
         } else {
-            PanContainer(
-            zoom = state.zoomLevel,
-            offsetX = state.offsetX,
-            offsetY = state.offsetY,
-            onPanChange = { dx, dy -> viewModel.updatePan(dx, dy) }
-        ) {
-            KeyboardLayout(
-                state = state,
-                onKeyPress = { key ->
-                    if (state.hapticEnabled) {
-                        view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                    }
-                    viewModel.onKeyPress(key)
-                },
-                onToggleShift = { viewModel.toggleShift() },
-                onToggleLayer = { viewModel.toggleLayer() },
-                onOpenSettings = { viewModel.openSettingsActivity() },
-                onOpenEmojiPicker = { viewModel.handleEmojiKey() },
-                onEditorAction = { viewModel.onEditorAction() }
-            )
-        }
+            Box(modifier = Modifier.fillMaxWidth().height(keyboardHeight)) {
+                PanContainer(
+                    zoom = state.zoomLevel,
+                    offsetX = state.offsetX,
+                    offsetY = state.offsetY,
+                    onPanChange = { dx, dy -> viewModel.updatePan(dx, dy) }
+                ) {
+                    KeyboardLayout(
+                        state = state,
+                        onKeyPress = { key ->
+                            if (state.hapticEnabled) {
+                                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                            }
+                            viewModel.onKeyPress(key)
+                        },
+                        onToggleShift = { viewModel.toggleShift() },
+                        onToggleLayer = { viewModel.toggleLayer() },
+                        onOpenSettings = { viewModel.openSettingsActivity() },
+                        onOpenEmojiPicker = { viewModel.handleEmojiKey() },
+                        onEditorAction = { viewModel.onEditorAction() }
+                    )
+                }
+            }
         }
     }
 }
