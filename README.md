@@ -4,6 +4,21 @@ SeeMoreBoard is an Android input method (IME) designed for people with low visio
 
 The application is written in Kotlin with Jetpack Compose and uses Android DataStore for settings persistence.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="screenshots/12062.jpg" alt="SeeMoreBoard settings with zoom, keyboard height, and theme controls" width="240"></td>
+    <td><img src="screenshots/12064.jpg" alt="SeeMoreBoard blue and white keyboard in a text editor" width="240"></td>
+    <td><img src="screenshots/12066.jpg" alt="SeeMoreBoard yellow high-contrast keyboard theme" width="240"></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/12068.jpg" alt="SeeMoreBoard keyboard in landscape orientation" width="480"></td>
+    <td><img src="screenshots/12070.jpg" alt="SeeMoreBoard emoji picker" width="240"></td>
+    <td><img src="screenshots/12072.jpg" alt="SeeMoreBoard white and black high-contrast keyboard theme" width="240"></td>
+  </tr>
+</table>
+
 ## License
 
 SeeMoreBoard is free software: you can redistribute it and/or modify it
