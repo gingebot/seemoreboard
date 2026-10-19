@@ -92,41 +92,49 @@ fun KeyButton(
                                 pass = PointerEventPass.Initial
                             )
                             val startPosition = down.position
-                            var panStarted = false
-                            val intentResult = withTimeoutOrNull(PAN_INTENT_DELAY_MS) {
-                                while (true) {
-                                    val event = awaitPointerEvent(PointerEventPass.Initial)
-                                    val change = event.changes.firstOrNull() ?: return@withTimeoutOrNull false
-                                    if ((change.position - startPosition).getDistance() > touchSlop) {
-                                        panStarted = true
-                                        return@withTimeoutOrNull false
-                                    }
-                                    if (!change.pressed) {
-                                        change.consume()
-                                        currentOnClick.value()
-                                        return@withTimeoutOrNull false
-                                    }
-                                }
-                            }
-                            if (panStarted) continue
-
-                            if (intentResult != null) continue
-
-                            down.consume()
                             val press = PressInteraction.Press(down.position)
                             repeatPressed = true
                             interactionSource.tryEmit(press)
-                            currentOnClick.value()
-
-                            val repeatJob: Job = repeatScope.launch {
-                                delay(LONG_PRESS_DELAY_MS)
-                                while (isActive) {
-                                    currentOnLongPressRepeat.value?.invoke()
-                                    delay(REPEAT_INTERVAL_MS)
-                                }
-                            }
+                            var panStarted = false
+                            var releasedDuringIntent = false
+                            var repeatJob: Job? = null
 
                             try {
+                                val intentResult = withTimeoutOrNull(PAN_INTENT_DELAY_MS) {
+                                    while (true) {
+                                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                                        val change = event.changes.firstOrNull()
+                                            ?: return@withTimeoutOrNull false
+                                        if ((change.position - startPosition).getDistance() > touchSlop) {
+                                            panStarted = true
+                                            return@withTimeoutOrNull false
+                                        }
+                                        if (!change.pressed) {
+                                            releasedDuringIntent = true
+                                            change.consume()
+                                            return@withTimeoutOrNull false
+                                        }
+                                    }
+                                }
+
+                                if (panStarted) {
+                                    continue
+                                }
+                                if (intentResult != null) {
+                                    if (releasedDuringIntent) currentOnClick.value()
+                                    continue
+                                }
+
+                                down.consume()
+                                currentOnClick.value()
+                                repeatJob = repeatScope.launch {
+                                    delay(LONG_PRESS_DELAY_MS)
+                                    while (isActive) {
+                                        currentOnLongPressRepeat.value?.invoke()
+                                        delay(REPEAT_INTERVAL_MS)
+                                    }
+                                }
+
                                 while (true) {
                                     val event = awaitPointerEvent(PointerEventPass.Initial)
                                     val change = event.changes.firstOrNull() ?: break
@@ -134,7 +142,7 @@ fun KeyButton(
                                     if (!change.pressed) break
                                 }
                             } finally {
-                                repeatJob.cancel()
+                                repeatJob?.cancel()
                                 repeatPressed = false
                                 interactionSource.tryEmit(PressInteraction.Release(press))
                             }
