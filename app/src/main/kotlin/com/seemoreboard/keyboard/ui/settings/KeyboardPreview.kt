@@ -75,7 +75,7 @@ private fun PreviewLayer(
                         val label = entry.removePrefix("\u25B6")
                         val weight = when (label) {
                             "Space" -> 3f
-                            "123?" -> 1.8f
+                            "123?", "?123", "=<", "ABC" -> 1.8f
                             else -> 1f
                         }
                         KeyButton(

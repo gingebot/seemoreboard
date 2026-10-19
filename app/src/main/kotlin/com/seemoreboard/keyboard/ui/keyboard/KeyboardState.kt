@@ -6,7 +6,7 @@ import com.seemoreboard.keyboard.domain.settings.EmojiSize
 
 enum class ShiftState { OFF, ON, LOCK }
 
-enum class KeyboardLayer { ALPHA, SYMBOLS }
+enum class KeyboardLayer { ALPHA, NUMERIC_SYMBOLS, EXTENDED_SYMBOLS }
 
 data class KeyboardState(
     val lastKeyPressed: String = "",

@@ -76,7 +76,9 @@ fun KeyboardScreen(viewModel: KeyboardViewModel) {
                             viewModel.onKeyPress(key)
                         },
                         onToggleShift = { viewModel.toggleShift() },
-                        onToggleLayer = { viewModel.toggleLayer() },
+                        onShowAlphabet = { viewModel.showAlphabetLayer() },
+                        onShowNumericSymbols = { viewModel.showNumericSymbolsLayer() },
+                        onShowExtendedSymbols = { viewModel.showExtendedSymbolsLayer() },
                         onOpenSettings = { viewModel.openSettingsActivity() },
                         onOpenEmojiPicker = { viewModel.handleEmojiKey() },
                         onEditorAction = { viewModel.onEditorAction() }
@@ -92,7 +94,9 @@ private fun KeyboardLayout(
     state: KeyboardState,
     onKeyPress: (String) -> Unit,
     onToggleShift: () -> Unit,
-    onToggleLayer: () -> Unit,
+    onShowAlphabet: () -> Unit,
+    onShowNumericSymbols: () -> Unit,
+    onShowExtendedSymbols: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenEmojiPicker: () -> Unit,
     onEditorAction: () -> Unit
@@ -130,7 +134,7 @@ private fun KeyboardLayout(
                         val label = entry.removePrefix("\u25B6")
                         val weight = when (label) {
                             "Space" -> 3f
-                            "123?" -> 1.8f
+                            "123?", "?123", "=<" -> 1.8f
                             "ABC" -> 1.8f
                             else -> 1f
                         }
@@ -150,8 +154,10 @@ private fun KeyboardLayout(
                         val onClick: () -> Unit = when (label) {
                             "Shift" -> onToggleShift
                             "\u232B" -> ({ onKeyPress("⌫") })
-                            "123?" -> onToggleLayer
-                            "ABC" -> onToggleLayer
+                            "123?" -> onShowNumericSymbols
+                            "?123" -> onShowNumericSymbols
+                            "=<" -> onShowExtendedSymbols
+                            "ABC" -> onShowAlphabet
                             "\u2699" -> onOpenSettings
                             "\uD83D\uDE42" -> onOpenEmojiPicker
                             "Space" -> ({ onKeyPress(" ") })

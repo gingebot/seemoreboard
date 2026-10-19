@@ -11,17 +11,25 @@ object LayoutCalculator {
         listOf("\u25B6123?", "\u25B6\u2699", "\u25B6Space", "\u25B6\uD83D\uDE42", "\u25B6.", "\u25B6\u23CE")
     )
 
-    val symbolsLayout = listOf(
+    val numericSymbolsLayout = listOf(
         listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0"),
-        listOf("/", ":", ";", "(", ")", "\u00A3", "&", "@", "\"", ""),
-        listOf("\u25B6Shift", "!", "?", ",", ".", "+", "-", "_", "*", "\u25B6\u232B"),
-        listOf("\u25B6ABC", "\u25B6\u2699", "\u25B6Space", "\u25B6\uD83D\uDE42", "\u25B6.", "\u25B6\u23CE")
+        listOf("@", "#", "\u00A3", "_", "&", "-", "+", "(", ")", "/"),
+        listOf("\u25B6=<", "*", "'", "\"", ":", ";", "!", "?", "\u25B6\u232B"),
+        listOf("\u25B6ABC", ",", "\u25B6Space", ".", "\u25B6\u23CE")
+    )
+
+    val extendedSymbolsLayout = listOf(
+        listOf("~", "|", "\u221A", "\u03C0", "\u00D7", "\u00A7", "\u0394"),
+        listOf("\u20AC", "\u00A5", "$", "\u00A2", "^", "{", "}", "\\"),
+        listOf("\u25B6?123", "%", "\u00A9", "\u2122", "\u2713", "[", "]", "\u25B6\u232B"),
+        listOf("\u25B6ABC", "<", "\u25B6Space", ">", "\u25B6\u23CE")
     )
 
     fun getLayout(layer: KeyboardLayer): List<List<String>> {
         return when (layer) {
             KeyboardLayer.ALPHA -> alphabetLayout
-            KeyboardLayer.SYMBOLS -> symbolsLayout
+            KeyboardLayer.NUMERIC_SYMBOLS -> numericSymbolsLayout
+            KeyboardLayer.EXTENDED_SYMBOLS -> extendedSymbolsLayout
         }
     }
 
