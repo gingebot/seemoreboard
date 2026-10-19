@@ -21,6 +21,8 @@ An Android keyboard (IME) designed for people with low vision, with:
 
 - Keyboard Layout Engine
   Defines key positions, labels, hitboxes, and recalculates layout under zoom/pan.
+  The current Compose implementation represents the keyboard pages as Kotlin row lists
+  in `LayoutCalculator`: alphabetic, primary numeric/symbol, and extended symbol layouts.
 
 - Input Handling Layer
   Bridges UI events to `InputConnection`.
@@ -190,7 +192,9 @@ This structure ensures:
 4. Zoom changes trigger `LaunchedEffect` in `PanContainer` to reclamp `currentOffset`.
 5. `KeyboardViewModel.updatePan()` updates `KeyboardState` offset values.
 6. `KeyboardScreen` recomposes with `graphicsLayer` scale/translation.
-7. `LayoutCalculator` recalculates key hitboxes based on zoom/pan.
+7. `LayoutCalculator` recalculates key hitboxes based on zoom/pan. Its page selection is
+   represented by `KeyboardLayer.ALPHA`, `NUMERIC_SYMBOLS`, or `EXTENDED_SYMBOLS`; page
+   switches are explicit ViewModel state updates and do not affect zoom, pan, or settings.
 
 ---
 

@@ -129,14 +129,20 @@ class KeyboardViewModel(
         }
     }
 
-    fun toggleLayer() {
-        _state.update {
-            it.copy(
-                activeLayer = if (it.activeLayer == KeyboardLayer.ALPHA)
-                    KeyboardLayer.SYMBOLS else KeyboardLayer.ALPHA,
-                shiftState = ShiftState.OFF
-            )
-        }
+    fun showAlphabetLayer() {
+        selectLayer(KeyboardLayer.ALPHA)
+    }
+
+    fun showNumericSymbolsLayer() {
+        selectLayer(KeyboardLayer.NUMERIC_SYMBOLS)
+    }
+
+    fun showExtendedSymbolsLayer() {
+        selectLayer(KeyboardLayer.EXTENDED_SYMBOLS)
+    }
+
+    private fun selectLayer(layer: KeyboardLayer) {
+        _state.update { it.copy(activeLayer = layer, shiftState = ShiftState.OFF) }
     }
 
     fun openSettingsActivity() {
