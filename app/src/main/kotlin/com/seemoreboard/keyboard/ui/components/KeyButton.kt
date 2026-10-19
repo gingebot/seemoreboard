@@ -35,10 +35,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.platform.LocalViewConfiguration
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -66,6 +67,7 @@ fun KeyButton(
     val repeatScope = rememberCoroutineScope()
     val currentOnClick = rememberUpdatedState(onClick)
     val currentOnLongPressRepeat = rememberUpdatedState(onLongPressRepeat)
+    val touchSlop = LocalViewConfiguration.current.touchSlop
 
     val bgColor = if (isPressed) theme.keyLabel else theme.keyBackground
     val textColor = if (isPressed) theme.keyBackground else theme.keyLabel
@@ -89,6 +91,27 @@ fun KeyButton(
                                 requireUnconsumed = false,
                                 pass = PointerEventPass.Initial
                             )
+                            val startPosition = down.position
+                            var panStarted = false
+                            val intentResult = withTimeoutOrNull(PAN_INTENT_DELAY_MS) {
+                                while (true) {
+                                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                                    val change = event.changes.firstOrNull() ?: return@withTimeoutOrNull false
+                                    if ((change.position - startPosition).getDistance() > touchSlop) {
+                                        panStarted = true
+                                        return@withTimeoutOrNull false
+                                    }
+                                    if (!change.pressed) {
+                                        change.consume()
+                                        currentOnClick.value()
+                                        return@withTimeoutOrNull false
+                                    }
+                                }
+                            }
+                            if (panStarted) continue
+
+                            if (intentResult != null) continue
+
                             down.consume()
                             val press = PressInteraction.Press(down.position)
                             repeatPressed = true
@@ -172,3 +195,4 @@ fun KeyButton(
 
 private const val LONG_PRESS_DELAY_MS = 400L
 private const val REPEAT_INTERVAL_MS = 75L
+private const val PAN_INTENT_DELAY_MS = 250L
