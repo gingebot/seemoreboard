@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
@@ -31,6 +32,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import com.seemoreboard.keyboard.ui.theme.KeyboardTheme
 
 @Composable
@@ -42,6 +51,7 @@ fun KeyButton(
     enabled: Boolean = true,
     contentDescription: String = label,
     showSearchIcon: Boolean = false,
+    onLongPressRepeat: (() -> Unit)? = null,
     onClick: () -> Unit
 ) {
     val shape = RoundedCornerShape(8.dp)
@@ -62,13 +72,48 @@ fun KeyButton(
             .clip(shape)
             .background(bgColor)
             .border(1.dp, borderColor, shape)
-            .then(
-                if (enabled) Modifier.clickable(
+            .then(if (enabled && onLongPressRepeat != null) {
+                Modifier.pointerInput(onClick, onLongPressRepeat) {
+                    coroutineScope {
+                        while (true) {
+                            val down = awaitPointerEventScope {
+                                awaitFirstDown(requireUnconsumed = false)
+                            }
+                            down.consume()
+                            val press = PressInteraction.Press(down.position)
+                            interactionSource.tryEmit(press)
+
+                            onClick()
+                            val repeatJob: Job = launch {
+                                delay(LONG_PRESS_DELAY_MS)
+                                while (isActive) {
+                                    onLongPressRepeat()
+                                    delay(REPEAT_INTERVAL_MS)
+                                }
+                            }
+
+                            val up = awaitPointerEventScope {
+                                waitForUpOrCancellation()
+                            }
+                            repeatJob.cancel()
+                            if (up == null) {
+                                interactionSource.tryEmit(PressInteraction.Cancel(press))
+                            } else {
+                                up.consume()
+                                interactionSource.tryEmit(PressInteraction.Release(press))
+                            }
+                        }
+                    }
+                }
+            } else if (enabled) {
+                Modifier.clickable(
                     interactionSource = interactionSource,
                     indication = null,
                     onClick = onClick
-                ) else Modifier
-            )
+                )
+            } else {
+                Modifier
+            })
             .padding(2.dp)
             .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center
@@ -111,3 +156,6 @@ fun KeyButton(
         }
     }
 }
+
+private const val LONG_PRESS_DELAY_MS = 400L
+private const val REPEAT_INTERVAL_MS = 75L

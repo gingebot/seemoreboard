@@ -22,9 +22,8 @@ class InputConnectionBridge {
 
     fun deleteCharacter() {
         val connection = inputConnection ?: return
-        val beforeCursor = connection.getTextBeforeCursor(MAX_GRAPHEME_LOOKBACK, 0)?.toString()
-        val codePointCount = beforeCursor?.let(::precedingGraphemeCodePointCount) ?: 1
-        connection.deleteSurroundingTextInCodePoints(codePointCount.coerceAtLeast(1), 0)
+        connection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
+        connection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL))
     }
 
     fun submit() {
