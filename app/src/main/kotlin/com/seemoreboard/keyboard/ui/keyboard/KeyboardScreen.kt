@@ -192,6 +192,11 @@ private fun KeyboardLayout(
                             },
                             showSearchIcon = isEditorAction && state.editorAction == EditorInfo.IME_ACTION_SEARCH,
                             height = keyHeight,
+                            onLongPressRepeat = if (label == "\u232B") {
+                                { onKeyPress("⌫") }
+                            } else {
+                                null
+                            },
                             onClick = onClick
                         )
                     } else {
