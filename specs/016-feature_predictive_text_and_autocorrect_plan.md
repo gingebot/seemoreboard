@@ -1,10 +1,10 @@
 # Feature 016 — Predictive Text & Autocorrect: Planning Specification
 
-**Status:** Planning only. This document defines the intended feature, architecture, constraints, risks, and delivery sequence. It is not authorization to implement the complete feature in one pass. Each delivery milestone below should be refined into a smaller feature spec before implementation.
+**Status:** Planning only. This document defines the intended feature, architecture, constraints, risks, and delivery sequence. It is not authorization to implement the complete feature in one pass. Implementation is divided into child specs 017–025.
 
 ## Summary
 
-Add offline predictive text and autocorrect to SeeMoreBoard, an Android IME designed for people with low vision. The feature will provide up to three suggestions in a persistent row above the keyboard. Suggestions will complete or correct the word around the cursor, or predict the next word based on the immediately preceding word. Selecting a suggestion replaces the relevant text; selecting a next-word prediction adds a trailing space.
+Add offline predictive text and autocorrect to SeeMoreBoard, an Android IME designed for people with low vision. The feature will provide up to three suggestions in a persistent row above the keyboard. Suggestions will complete or correct the word around the cursor, or predict the next word using up to five preceding words from the current sentence, subject to a strict character limit established during feasibility testing. Selecting a suggestion replaces the relevant text; selecting a next-word prediction adds a trailing space.
 
 Autocorrect will be enabled by default and will automatically correct likely misspellings when the user types a space or punctuation. Users can independently enable or disable predictive text and autocorrect in the existing global Settings activity.
 
@@ -34,7 +34,7 @@ The initial language is **British English (`en-GB`) only**. The feature must wor
 ### Suggestions
 
 - Display a dedicated suggestion row **above the keyboard keys**.
-- Keep the row visible at all times while the regular keyboard is visible. When there are no candidates, show three blank candidate slots.
+- Keep the row visible at all times while the regular keyboard is visible. When there are no candidates, show three blank candidate slots. If predictive text is disabled but autocorrect is enabled, the row may still show the one-shot original-spelling undo candidate after an automatic correction.
 - Show up to three candidates.
 - While the cursor is inside a word or at its end, suggest completions or corrections for that word. If the current word is misspelled and autocorrect applies a correction, expose the original spelling as the first suggestion so the user can undo it.
 - After a word boundary, predict the next word using up to five preceding words from the current sentence as context. Context must be read only before the cursor and be subject to a strict character limit established during feasibility testing.
@@ -58,7 +58,7 @@ Add controls near the bottom of the existing Settings activity:
 - **Autocorrect:** on/off.
 - **Suggestion text size:** slider.
 
-The switches are global, persisted in DataStore, and enabled by default. Suggestion text size is independent of keyboard zoom. The initial release uses British English without a language selector; the architecture should allow language configuration to be added later.
+The switches are global, persisted in DataStore, and enabled by default. Suggestion text size is independent of keyboard zoom; its supported range and default must be set through legibility testing during Feature 018. The initial release uses British English without a language selector; the architecture should allow language configuration to be added later.
 
 ### Accessibility and layout
 
@@ -146,9 +146,9 @@ Extend `KeyboardSettings`, `DataStoreSettingsRepository`, and `SettingsUseCases`
 
 ## Incremental delivery plan
 
-Each item below should become its own small feature spec with its own acceptance criteria before implementation.
+Each item below has a child spec with its own scope and acceptance criteria. Feature 017 is a research spike; Feature 025 is end-to-end integration and validation. Implement the applicable user-facing child specs incrementally, honoring their dependencies and the decisions from Feature 017.
 
-### Goal 1 — Offline language-data feasibility
+### Goal 1 — Offline language-data feasibility ([Feature 017](017-feature_offline_language_model_feasibility.md))
 
 - Identify candidate British-English dictionary and prediction resources and their licences.
 - Compare compact n-gram next-word prediction, dictionary-based autocorrect/current-word ranking, and a small neural predictor if n-gram quality is inadequate. Treat a generative small LLM as a comparison rather than a default.
@@ -159,55 +159,55 @@ Each item below should become its own small feature spec with its own acceptance
 
 **Exit condition:** An approved, legally usable offline source and documented tradeoffs.
 
-### Goal 2 — Persisted settings
+### Goal 2 — Persisted settings ([Feature 018](018-feature_predictive_text_settings.md))
 
 - Add the independent predictive-text and autocorrect switches.
-- Add the suggestion text-size slider.
+- Add the suggestion text-size slider; define and document its default, range, and steps using legibility testing rather than assuming values in the parent plan.
 - Persist these globally using the existing DataStore approach.
 - Confirm both switches default to enabled and settings survive restart.
 
-### Goal 3 — Safe editor context
+### Goal 3 — Safe editor context ([Feature 019](019-feature_safe_editor_context.md))
 
 - Define supported word-boundary and cursor-context detection.
 - Add bounded context access through `InputConnectionBridge`.
 - Identify password, visible-password, and web-password fields and prohibit context reads there.
 - Test editor changes, selection, cursor movement, composing text, and unsupported contexts.
 
-### Goal 4 — Candidate-row UI
+### Goal 4 — Candidate-row UI ([Feature 020](020-feature_suggestion_row_ui.md))
 
-- Add the always-visible three-slot row above the keys, initially with blank slots.
+- Add the always-visible three-slot row above the keys, initially with blank slots except for a correction-undo candidate supplied by enabled autocorrect.
 - Apply themes and independent text-size setting.
 - Add candidate-row-only horizontal panning.
 - Verify no interference with keyboard zoom/pan, key hitboxes, keyboard height, and accessibility services.
 
-### Goal 5 — Current-word suggestions
+### Goal 5 — Current-word suggestions ([Feature 021](021-feature_current_word_suggestions.md))
 
 - Implement the suggestion-engine contract and local candidate lookup.
 - Generate current-word completions/corrections at the cursor while typing.
 - Replace the correct word span when a candidate is selected.
 - Ensure stale results and unsupported cursor positions do not show misleading candidates.
 
-### Goal 6 — Next-word prediction
+### Goal 6 — Next-word prediction ([Feature 022](022-feature_next_word_prediction.md))
 
 - Generate next-word candidates using up to five preceding words from the current sentence, subject to the tested character limit and context-before-cursor privacy rule.
 - Add a trailing space when a next-word candidate is selected.
 - Evaluate the selected n-gram/model approach against the model-independent engine contract; use a small neural predictor only if feasibility results justify it.
 - Verify punctuation and capitalization handling at word and sentence boundaries.
 
-### Goal 7 — Autocorrect and recovery
+### Goal 7 — Autocorrect and recovery ([Feature 023](023-feature_autocorrect_and_recovery.md))
 
 - Apply likely corrections on space and punctuation when enabled.
 - Show the original spelling as the first candidate after an automatic correction.
 - Restore the original spelling when that candidate is selected.
 - Clear the undo candidate when the edited word or relevant context changes.
 
-### Goal 8 — Capitalization and punctuation
+### Goal 8 — Capitalization and punctuation ([Feature 024](024-feature_capitalization_and_double_space_punctuation.md))
 
 - Add sentence-start capitalization and standalone “I” capitalization.
 - Add two-space-to-period-and-space behavior under the autocorrect setting.
 - Cover capitalization, punctuation, editor-action, and cursor-position edge cases.
 
-### Goal 9 — Full integration and validation
+### Goal 9 — Full integration and validation ([Feature 025](025-feature_predictive_text_integration_validation.md))
 
 - Validate TalkBack and magnifier navigation/selection.
 - Validate themes, independent text sizing, zoom, pan, keyboard height, rotation, and landscape/extract mode.
