@@ -15,7 +15,7 @@ Validate that settings, bounded editor context, suggestion UI, current-word cand
 - Verify selected resource/model licences and that packaged artifacts match Feature 017’s approved recommendation.
 - Test representative editor types, secure field variants, cursor/selection conditions, punctuation, composing text, editor actions, and lifecycle changes.
 - Verify accessibility and keyboard UI integration across themes, text size, zoom/pan, keyboard height, orientation, and extract mode.
-- Measure end-to-end suggestion response time, memory, and packaged resource size using the Feature 017 method; compare with thresholds approved after feasibility results.
+- Measure end-to-end suggestion response time, memory, and packaged resource size on the single available physical device using the Feature 017 method; report device-specific results.
 - Document known compatibility limitations and release-blocking defects.
 
 ## Validation matrix
@@ -33,12 +33,12 @@ Validate that settings, bounded editor context, suggestion UI, current-word cand
 - Autocorrect at space and punctuation boundaries, original-spelling undo, and undo invalidation.
 - Sentence capitalization, standalone “I”, decimal/abbreviation cases, and two/three spaces.
 - Cursor moves, selections, composing text, stale asynchronous results, empty/partial `InputConnection`, editor change, and session teardown.
-- At least two distinct host editor implementations where available, plus multiline and editor-action fields.
+- Multiple host editor implementations where available (these may be tested on the same physical device), plus multiline and editor-action fields.
 
 ### Privacy and offline behavior
 
 - Password, visible-password, and web-password fields; verify no surrounding/extracted text reads are invoked.
-- Verify context is before-cursor only, sentence bounded, no more than five words, and under the approved character limit.
+- Verify context is before-cursor only, sentence bounded, no more than four preceding words for initial n-gram prediction, and under the approved character limit.
 - Verify no model request occurs after settings disable the applicable behavior.
 - Verify airplane/offline operation and no editor text in logs, persistent storage, or network traffic.
 
@@ -59,7 +59,7 @@ Validate that settings, bounded editor context, suggestion UI, current-word cand
 7. TalkBack, magnification, themes, size controls, pan/zoom, keyboard height, and orientation pass the documented manual/instrumented checks.
 8. Offline operation is demonstrated with network unavailable; no text is transmitted, logged, or persisted.
 9. Model/library/data licences and packaged size are reviewed against Feature 017’s decision record.
-10. Response time and memory are measured on named representative devices and compared with thresholds established after feasibility evaluation; deviations are documented and dispositioned.
+10. Response time and memory are measured on the named available physical device and compared with thresholds established after feasibility evaluation; results are explicitly device-specific, with deviations documented and dispositioned.
 11. Existing keyboard behaviors—key entry, deletion, shift, symbols, emoji, editor actions, settings persistence, and lifecycle stability—remain intact.
 12. Test results, device/editor matrix, unresolved risks, and release recommendation are recorded.
 

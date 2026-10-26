@@ -4,7 +4,7 @@
 
 ## Summary
 
-Add offline predictive text and autocorrect to SeeMoreBoard, an Android IME designed for people with low vision. The feature will provide up to three suggestions in a persistent row above the keyboard. Suggestions will complete or correct the word around the cursor, or predict the next word using up to five preceding words from the current sentence, subject to a strict character limit established during feasibility testing. Selecting a suggestion replaces the relevant text; selecting a next-word prediction adds a trailing space.
+Add offline predictive text and autocorrect to SeeMoreBoard, an Android IME designed for people with low vision. The feature will provide up to three suggestions in a persistent row above the keyboard. Suggestions will complete or correct the word around the cursor, or predict the next word using up to four preceding words from the current sentence for the initial n-gram implementation, subject to a strict character limit established during feasibility testing. Selecting a suggestion replaces the relevant text; selecting a next-word prediction adds a trailing space. A future model that supports longer context may be evaluated separately.
 
 Autocorrect will be enabled by default and will automatically correct likely misspellings when the user types a space or punctuation. Users can independently enable or disable predictive text and autocorrect in the existing global Settings activity.
 
@@ -37,7 +37,7 @@ The initial language is **British English (`en-GB`) only**. The feature must wor
 - Keep the row visible at all times while the regular keyboard is visible. When there are no candidates, show three blank candidate slots. If predictive text is disabled but autocorrect is enabled, the row may still show the one-shot original-spelling undo candidate after an automatic correction.
 - Show up to three candidates.
 - While the cursor is inside a word or at its end, suggest completions or corrections for that word. If the current word is misspelled and autocorrect applies a correction, expose the original spelling as the first suggestion so the user can undo it.
-- After a word boundary, predict the next word using up to five preceding words from the current sentence as context. Context must be read only before the cursor and be subject to a strict character limit established during feasibility testing.
+- After a word boundary, the initial n-gram predictor uses up to four preceding words from the current sentence as context. Context must be read only before the cursor and be subject to a strict character limit established during feasibility testing. A later model supporting longer context may be evaluated separately.
 - Selecting a current-word candidate replaces the word around the cursor.
 - Selecting a next-word candidate inserts the predicted word followed by a space.
 - Include appropriate capitalization and punctuation in candidate generation and rendering.
@@ -73,7 +73,7 @@ The switches are global, persisted in DataStore, and enabled by default. Suggest
 - Disable prediction and autocorrection for password, visible-password, and web-password fields.
 - Do not query surrounding text in those sensitive fields.
 - Do not suppress suggestions in other fields in this release, and do not add per-app suppression.
-- For prediction, use only the current word (or its prefix while being typed) and up to five preceding words from the current sentence. Read context only before the cursor, stop at sentence boundaries, and apply a strict character limit established during feasibility testing. Do not retain editor text after processing it.
+- For initial n-gram prediction, use only the current word (or its prefix while being typed) and up to four preceding words from the current sentence. Read context only before the cursor, stop at sentence boundaries, and apply a strict character limit established during feasibility testing. Do not retain editor text after processing it. A future model supporting longer context may be evaluated separately.
 - Clear candidate and undo state when the editor changes, the input session ends, or context becomes unreliable.
 - If the cursor is neither inside a word nor at its end, show no suggestions.
 - Do not infer language switching or support mixed-language typing.
@@ -128,7 +128,7 @@ Extend `KeyboardSettings`, `DataStoreSettingsRepository`, and `SettingsUseCases`
 3. No network access is required for suggestions or correction.
 4. No user-typed vocabulary is learned or persisted.
 5. Suggestions appear as the user types, with at most three candidates.
-6. Current-word selection replaces the word around the cursor; next-word selection inserts a trailing space. Next-word predictions use at most five preceding words from the current sentence, read only before the cursor and within a character limit established by feasibility testing.
+6. Current-word selection replaces the word around the cursor; next-word selection inserts a trailing space. Initial n-gram predictions use at most four preceding words from the current sentence, read only before the cursor and within a character limit established by feasibility testing.
 7. A likely typo is automatically corrected on space or punctuation when autocorrect is enabled.
 8. The original spelling is offered first after automatic correction and tapping it restores that spelling while the undo candidate remains valid.
 9. Sentence-start and standalone “I” capitalization are handled.
@@ -152,8 +152,8 @@ Each item below has a child spec with its own scope and acceptance criteria. Fea
 
 - Identify candidate British-English dictionary and prediction resources and their licences.
 - Compare compact n-gram next-word prediction, dictionary-based autocorrect/current-word ranking, and a small neural predictor if n-gram quality is inadequate. Treat a generative small LLM as a comparison rather than a default.
-- Test bounded context of up to five preceding words in the current sentence and establish a strict maximum character count from measured quality, latency, and memory use.
-- Measure resource size and assess expected quality and maintenance implications.
+- Test bounded context of up to four preceding words for the initial n-gram approach and establish a strict maximum character count from measured quality, latency, and memory use.
+- Measure resource size, expected quality, maintenance implications, and runtime behavior on the single available physical test device; report results as device-specific rather than generalizing across Android hardware.
 - Decide whether to bundle a resource or use another verified offline source.
 - Record prediction quality, performance, runtime memory, and package-size results for later acceptance thresholds.
 
@@ -189,7 +189,7 @@ Each item below has a child spec with its own scope and acceptance criteria. Fea
 
 ### Goal 6 — Next-word prediction ([Feature 022](022-feature_next_word_prediction.md))
 
-- Generate next-word candidates using up to five preceding words from the current sentence, subject to the tested character limit and context-before-cursor privacy rule.
+- Generate initial n-gram next-word candidates using up to four preceding words from the current sentence, subject to the tested character limit and context-before-cursor privacy rule.
 - Add a trailing space when a next-word candidate is selected.
 - Evaluate the selected n-gram/model approach against the model-independent engine contract; use a small neural predictor only if feasibility results justify it.
 - Verify punctuation and capitalization handling at word and sentence boundaries.
@@ -212,14 +212,14 @@ Each item below has a child spec with its own scope and acceptance criteria. Fea
 - Validate TalkBack and magnifier navigation/selection.
 - Validate themes, independent text sizing, zoom, pan, keyboard height, rotation, and landscape/extract mode.
 - Test multiple host editor types, secure field types, and lifecycle transitions.
-- Measure suggestion responsiveness and resource/app-size impact, then decide whether explicit numerical thresholds should be added to follow-up specs.
+- Measure suggestion responsiveness and resource/app-size impact on the single available physical test device, then decide whether explicit numerical thresholds should be added to follow-up specs.
 
 ## Risks and open implementation questions
 
-- **Language resource quality/licensing:** No dictionary or prediction model data source has yet been selected. This is the first dependency to resolve.
-- **Prediction-model tradeoffs:** N-gram, neural, and generative approaches differ in quality, integration complexity, runtime, and footprint. The engine interface should remain model-independent until feasibility testing selects an approach.
+- **Language resource quality/licensing:** The BNC user licence supplied for review restricts use of source text in commercial products, and no redistribution-cleared prediction corpus/model has been confirmed. This is the first dependency to resolve.
+- **Prediction-model tradeoffs:** N-gram, neural, and generative approaches differ in quality, integration complexity, runtime, and footprint. The engine interface should remain model-independent until feasibility testing selects an approach. The initial n-gram context is capped at four preceding words; longer context requires a separate model evaluation and spec revision.
 - **Editor variability:** `InputConnection` context and replacement behavior can vary among host apps, especially around selections and composing text. Real-editor validation is required.
 - **Undo semantics:** Retain the original spelling only while the most recent correction remains the active relevant word; subsequent edits or cursor movement clear it.
 - **TalkBack verbosity:** Candidates should be discoverable and selectable without announcing every prediction update. Confirm this behavior through accessibility testing.
-- **Performance and size limits:** No numerical target was provided. Measure first, then set thresholds based on device testing.
+- **Performance and size limits:** No numerical target or additional test device is available. Measure on the SM-A566B, record device-specific results, and avoid generalizing to other hardware; set thresholds only after reviewing those measurements.
 - **Settings-language interpretation:** British English is fixed for this release, so there is no language selector; architecture should not prevent adding language configuration later.
