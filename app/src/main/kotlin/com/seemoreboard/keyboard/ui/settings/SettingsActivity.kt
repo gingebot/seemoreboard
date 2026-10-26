@@ -44,11 +44,13 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.seemoreboard.keyboard.data.settings.DataStoreSettingsRepository
 import com.seemoreboard.keyboard.domain.settings.EmojiSize
 import com.seemoreboard.keyboard.domain.settings.KeyboardSettings
+import com.seemoreboard.keyboard.domain.settings.SuggestionTextSize
 import com.seemoreboard.keyboard.domain.settings.SettingsUseCases
 import com.seemoreboard.keyboard.ime.service.SeeMoreBoardService
 import kotlin.math.roundToInt
@@ -133,8 +135,10 @@ fun SettingsScreen(
     val settings by useCases.settingsFlow.collectAsState(initial = KeyboardSettings())
     var zoomValue by remember { mutableFloatStateOf(settings.zoomLevel) }
     var heightValue by remember { mutableIntStateOf(settings.keyboardHeightDp) }
+    var suggestionTextSizeValue by remember { mutableIntStateOf(settings.suggestionTextSizeSp) }
     LaunchedEffect(settings.zoomLevel) { zoomValue = settings.zoomLevel }
     LaunchedEffect(settings.keyboardHeightDp) { heightValue = settings.keyboardHeightDp }
+    LaunchedEffect(settings.suggestionTextSizeSp) { suggestionTextSizeValue = settings.suggestionTextSizeSp }
 
     SettingsContent(
         settings = settings,
@@ -152,6 +156,16 @@ fun SettingsScreen(
         onThemeChanged = { useCases.setTheme(useCases.cycleTheme(settings.theme)) },
         onHapticsChanged = { useCases.setHapticEnabled(!settings.hapticEnabled) },
         onEmojiSizeChanged = useCases::setEmojiSize,
+        suggestionTextSizeValue = suggestionTextSizeValue,
+        onPredictiveTextChanged = useCases::setPredictiveTextEnabled,
+        onAutocorrectChanged = useCases::setAutocorrectEnabled,
+        onSuggestionTextSizeChanged = { sizeSp ->
+            val stepped = SuggestionTextSize.clamp(
+                (sizeSp.toFloat() / SuggestionTextSize.STEP_SP).roundToInt() * SuggestionTextSize.STEP_SP
+            )
+            suggestionTextSizeValue = stepped
+            useCases.setSuggestionTextSizeSp(stepped)
+        },
         onClose = onClose
     )
 }
@@ -169,6 +183,10 @@ fun SettingsContent(
     onThemeChanged: () -> Unit,
     onHapticsChanged: () -> Unit,
     onEmojiSizeChanged: (EmojiSize) -> Unit,
+    suggestionTextSizeValue: Int = settings.suggestionTextSizeSp,
+    onPredictiveTextChanged: (Boolean) -> Unit = {},
+    onAutocorrectChanged: (Boolean) -> Unit = {},
+    onSuggestionTextSizeChanged: (Int) -> Unit = {},
     onClose: () -> Unit
 ) {
     Column(
@@ -236,8 +254,33 @@ fun SettingsContent(
         Text("Change Theme", color = Color.White, fontSize = 22.sp, modifier = Modifier.clickable(onClick = onThemeChanged).background(Color(0xFF333333)).padding(horizontal = 24.dp, vertical = 16.dp).semantics { contentDescription = "Change Theme" })
 
         Spacer(Modifier.height(24.dp))
-        RowSetting("Haptics", settings.hapticEnabled, onHapticsChanged)
+        RowSetting("Haptics", settings.hapticEnabled) { onHapticsChanged() }
         EmojiSizeSetting(settings.emojiSize, onEmojiSizeChanged)
+
+        Spacer(Modifier.height(16.dp))
+        RowSetting("Predictive text", settings.predictiveTextEnabled, onPredictiveTextChanged)
+        RowSetting("Autocorrect", settings.autocorrectEnabled, onAutocorrectChanged)
+        Text(
+            "Suggestion text size: ${suggestionTextSizeValue} sp",
+            color = Color.White,
+            fontSize = 22.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { liveRegion = LiveRegionMode.Polite }
+        )
+        Slider(
+            value = suggestionTextSizeValue.toFloat(),
+            onValueChange = { onSuggestionTextSizeChanged(it.roundToInt()) },
+            valueRange = SuggestionTextSize.MIN_SP.toFloat()..SuggestionTextSize.MAX_SP.toFloat(),
+            steps = (SuggestionTextSize.MAX_SP - SuggestionTextSize.MIN_SP) / SuggestionTextSize.STEP_SP - 1,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = "Suggestion text size"
+                    stateDescription = "$suggestionTextSizeValue sp"
+                },
+            colors = sliderColors()
+        )
 
         Spacer(Modifier.height(32.dp))
         Text("Close", color = Color.White, fontSize = 24.sp, modifier = Modifier.clickable(onClick = onClose).background(Color(0xFF333333)).padding(16.dp))
@@ -261,10 +304,23 @@ private fun EmojiSizeSetting(selected: EmojiSize, onSelected: (EmojiSize) -> Uni
 }
 
 @Composable
-private fun RowSetting(label: String, checked: Boolean, onToggle: () -> Unit) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+private fun RowSetting(label: String, checked: Boolean, onToggle: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(label, color = Color.White, fontSize = 22.sp, modifier = Modifier.weight(1f))
-        Switch(checked = checked, onCheckedChange = { onToggle() }, colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = Color(0xFF666666)))
+        Switch(
+            checked = checked,
+            onCheckedChange = onToggle,
+            modifier = Modifier.semantics {
+                contentDescription = label
+                stateDescription = if (checked) "On" else "Off"
+            },
+            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = Color(0xFF666666))
+        )
     }
 }
 

@@ -9,5 +9,8 @@ data class KeyboardSettings(
     val audioEnabled: Boolean = false,
     val keyboardHeightDp: Int = 350,
     val theme: KeyboardTheme = KeyboardTheme.BLACK_WHITE,
-    val emojiSize: EmojiSize = EmojiSize.LARGE
+    val emojiSize: EmojiSize = EmojiSize.LARGE,
+    val predictiveTextEnabled: Boolean = true,
+    val autocorrectEnabled: Boolean = true,
+    val suggestionTextSizeSp: Int = SuggestionTextSize.DEFAULT_SP
 )

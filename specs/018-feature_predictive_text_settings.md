@@ -20,7 +20,7 @@ As a SeeMoreBoard user, I want to independently control predictive text and auto
 
 - Predictive text: enabled by default.
 - Autocorrect: enabled by default.
-- Suggestion text-size default, minimum, maximum, and slider steps are not predetermined in this planning spec. Select and document values through legibility/usability testing across supported screen densities, magnification, and keyboard heights before implementation; clamp persisted values to the chosen supported range.
+- Suggestion text-size implementation values: **22 sp default**, **16–32 sp range**, **2 sp steps**. This is a provisional setting choice aligned with the existing 22 sp Settings labels; it is not evidence of validated legibility across supported densities, magnification, or keyboard heights. Persisted values are clamped to this range. Record device-specific visual checks separately; broader legibility validation remains open.
 - Toggling predictive text off clears ordinary current-word and next-word suggestions, but does not implicitly change the autocorrect switch. If autocorrect remains enabled, the one-shot original-spelling undo candidate after a correction remains available.
 - Toggling autocorrect off stops automatic spelling correction, autocorrect-specific undo candidates, sentence capitalization, and two-space punctuation behavior; it does not implicitly disable predictive suggestions.
 - The suggestion row remains present with blank slots when there are no ordinary candidates or correction-undo candidate.
@@ -41,7 +41,7 @@ As a SeeMoreBoard user, I want to independently control predictive text and auto
 
 1. Predictive text and autocorrect appear as separate switches near the bottom of Settings.
 2. Both switches default to enabled on a fresh installation and persist independently.
-3. The suggestion-size slider displays its current value; its default, range, and step size are chosen and documented through legibility testing before implementation.
+3. The suggestion-size slider displays its current value and uses the documented 22 sp default, 16–32 sp range, and 2 sp steps; broader legibility validation across supported densities and magnification remains a follow-up validation item.
 4. All three settings persist across application process restart and are exposed through the existing settings Flow.
 5. Existing settings retain their values and behavior when the settings model and DataStore mapping are extended.
 6. Switch and slider controls are operable and understandable using TalkBack and magnification.
@@ -52,4 +52,4 @@ As a SeeMoreBoard user, I want to independently control predictive text and auto
 - Depends on Feature 016.
 - Uses existing DataStore settings architecture in `KeyboardSettings`, `DataStoreSettingsRepository`, `SettingsUseCases`, and `SettingsActivity`.
 - Add unit/instrumentation coverage for defaults, independent toggles, size clamping, persistence, reactive updates, and settings accessibility semantics.
-- Validate the selected size range and default with magnification and representative screen densities before fixing them as acceptance values.
+- Implementation uses 22 sp default, 16–32 sp range, and 2 sp steps. Settings controls were visually checked at the default 22 sp on the available SM-A566B (1080×2340, 450 dpi, Android 16, system font scale 1.0). System magnification was not enabled, other densities/heights were not tested, and the candidate row is not part of this feature; suggestion-rendering legibility across those conditions remains open.

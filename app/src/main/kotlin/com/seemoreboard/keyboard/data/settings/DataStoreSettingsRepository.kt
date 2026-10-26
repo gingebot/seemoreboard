@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.seemoreboard.keyboard.domain.settings.KeyboardSettings
 import com.seemoreboard.keyboard.domain.settings.EmojiSize
+import com.seemoreboard.keyboard.domain.settings.SuggestionTextSize
 import com.seemoreboard.keyboard.ui.theme.KeyboardTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -29,6 +30,9 @@ class DataStoreSettingsRepository(context: Context) {
     private val themeKey = stringPreferencesKey("keyboard_theme")
     private val recentEmojiKey = stringPreferencesKey("recent_emoji")
     private val emojiSizeKey = stringPreferencesKey("emoji_size")
+    private val predictiveTextEnabledKey = booleanPreferencesKey("predictive_text_enabled")
+    private val autocorrectEnabledKey = booleanPreferencesKey("autocorrect_enabled")
+    private val suggestionTextSizeSpKey = intPreferencesKey("suggestion_text_size_sp")
 
     val settingsFlow: Flow<KeyboardSettings> = appContext.keyboardDataStore.data.map { prefs ->
         KeyboardSettings(
@@ -40,7 +44,12 @@ class DataStoreSettingsRepository(context: Context) {
             } ?: KeyboardTheme.BLACK_WHITE,
             emojiSize = prefs[emojiSizeKey]?.let { value ->
                 runCatching { EmojiSize.valueOf(value) }.getOrDefault(EmojiSize.LARGE)
-            } ?: EmojiSize.LARGE
+            } ?: EmojiSize.LARGE,
+            predictiveTextEnabled = prefs[predictiveTextEnabledKey] ?: true,
+            autocorrectEnabled = prefs[autocorrectEnabledKey] ?: true,
+            suggestionTextSizeSp = SuggestionTextSize.clamp(
+                prefs[suggestionTextSizeSpKey] ?: SuggestionTextSize.DEFAULT_SP
+            )
         )
     }
 
@@ -93,6 +102,24 @@ class DataStoreSettingsRepository(context: Context) {
     suspend fun setEmojiSize(size: EmojiSize) {
         appContext.keyboardDataStore.edit { prefs ->
             prefs[emojiSizeKey] = size.name
+        }
+    }
+
+    suspend fun setPredictiveTextEnabled(enabled: Boolean) {
+        appContext.keyboardDataStore.edit { prefs ->
+            prefs[predictiveTextEnabledKey] = enabled
+        }
+    }
+
+    suspend fun setAutocorrectEnabled(enabled: Boolean) {
+        appContext.keyboardDataStore.edit { prefs ->
+            prefs[autocorrectEnabledKey] = enabled
+        }
+    }
+
+    suspend fun setSuggestionTextSizeSp(sizeSp: Int) {
+        appContext.keyboardDataStore.edit { prefs ->
+            prefs[suggestionTextSizeSpKey] = SuggestionTextSize.clamp(sizeSp)
         }
     }
 }

@@ -44,4 +44,16 @@ class SettingsUseCases(
     fun setEmojiSize(size: EmojiSize) {
         scope.launch { repository.setEmojiSize(size) }
     }
+
+    fun setPredictiveTextEnabled(enabled: Boolean) {
+        scope.launch { repository.setPredictiveTextEnabled(enabled) }
+    }
+
+    fun setAutocorrectEnabled(enabled: Boolean) {
+        scope.launch { repository.setAutocorrectEnabled(enabled) }
+    }
+
+    fun setSuggestionTextSizeSp(sizeSp: Int) {
+        scope.launch { repository.setSuggestionTextSizeSp(sizeSp) }
+    }
 }

@@ -41,7 +41,10 @@ class KeyboardViewModel(
                         hapticEnabled = settings.hapticEnabled,
                         keyboardHeightDp = settings.keyboardHeightDp,
                         theme = settings.theme,
-                        emojiSize = settings.emojiSize
+                        emojiSize = settings.emojiSize,
+                        predictiveTextEnabled = settings.predictiveTextEnabled,
+                        autocorrectEnabled = settings.autocorrectEnabled,
+                        suggestionTextSizeSp = settings.suggestionTextSizeSp
                     )
                 }
             }

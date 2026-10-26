@@ -3,6 +3,7 @@ package com.seemoreboard.keyboard.ui.keyboard
 import android.view.inputmethod.EditorInfo
 import com.seemoreboard.keyboard.ui.theme.KeyboardTheme
 import com.seemoreboard.keyboard.domain.settings.EmojiSize
+import com.seemoreboard.keyboard.domain.settings.SuggestionTextSize
 
 enum class ShiftState { OFF, ON, LOCK }
 
@@ -22,5 +23,8 @@ data class KeyboardState(
     val emojiPickerVisible: Boolean = false,
     val recentEmoji: List<String> = emptyList(),
     val emojiSize: EmojiSize = EmojiSize.LARGE,
+    val predictiveTextEnabled: Boolean = true,
+    val autocorrectEnabled: Boolean = true,
+    val suggestionTextSizeSp: Int = SuggestionTextSize.DEFAULT_SP,
     val editorAction: Int = EditorInfo.IME_ACTION_NONE
 )
